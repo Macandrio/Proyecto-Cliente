@@ -13,7 +13,7 @@
     </div>
   </div>
   
-  <div class="pt-5">
+  <div class="pt-5"> 
 
     <!-- Botón tipo "bocadillo" arriba a la izquierda -->
      
@@ -41,7 +41,9 @@
       <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="sidePanelLabel">Menú lateral</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        
       </div>
+
       <div class="offcanvas-body">
         <input
           ref="fileInput"
@@ -50,10 +52,16 @@
           style="display: none"
         />
 
+        <router-link to="/home" class="btn btn-primary w-100 mb-2">
+          Inicio
+        </router-link>
         <button class="btn btn-primary w-100 mb-2" @click="triggerFileSelect">
           Subir archivo de datos
         </button>
-        <button class="btn btn-primary w-100 mb-2">Datos profesorado</button>
+        <router-link to="/datos-profesorado" class="btn btn-primary w-100 mb-2">
+          Datos profesorado
+        </router-link>
+
         <button class="btn btn-primary w-100 mb-2">Generar partes diario</button>
         <button class="btn btn-primary w-100 mb-2">Ausencia</button>
       </div>
@@ -67,18 +75,26 @@
 <script setup>
 import Horario from '../components/Horario.vue'
 
+
 import { ref } from 'vue'
 import axios from 'axios'
+
+import { onMounted } from 'vue'
+import * as bootstrap from 'bootstrap'
+
 
 const fileInput = ref(null)
 const cargando = ref(false)
 
 
 function triggerFileSelect() {
+  fileInput.value.value = '' // limpiar el input
   fileInput.value.click()
+
 }
 
 function handleFileUpload(event) {
+
   const file = event.target.files[0]
   if (!file) return
 
@@ -102,6 +118,8 @@ function handleFileUpload(event) {
       alert('Archivo importado correctamente.')
     } catch (error) {
       console.error('Error al subir archivo:', error)
+      console.log('Código de respuesta:', error.response?.status)
+      console.log('Respuesta completa:', error.response?.data)
       alert('Error al importar el archivo.')
     } finally {
       cargando.value = false
@@ -110,6 +128,35 @@ function handleFileUpload(event) {
 
   reader.readAsDataURL(file)
 }
+
+
+
+
+onMounted(() => {
+  // Eliminar cualquier fondo oscuro residual al volver a esta vista
+  const offcanvasEl = document.getElementById('sidePanel')
+  if (offcanvasEl) {
+    // Forzar cierre del menú si quedó abierto
+    const instance = bootstrap.Offcanvas.getInstance(offcanvasEl)
+    if (instance) {
+      instance.hide()
+    } else {
+      // Si no había instancia, crear una y cerrarla inmediatamente
+      const newInstance = new bootstrap.Offcanvas(offcanvasEl)
+      newInstance.hide()
+    }
+  }
+
+  // Eliminar manualmente el backdrop si quedó en el DOM
+  const backdrop = document.querySelector('.offcanvas-backdrop')
+  if (backdrop) {
+    backdrop.remove()
+  }
+
+  // Limpiar clases en el body que causan el fondo oscuro
+  document.body.classList.remove('offcanvas-backdrop', 'modal-open', 'show')
+  document.body.style.overflow = ''
+})
 
 
 </script>

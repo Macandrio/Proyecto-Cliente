@@ -36,19 +36,13 @@
               </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
                     <li>
-                    <router-link class="dropdown-item" to="/cambiar-password">
                         Registrar Usuario
-                    </router-link>
                     </li>
                     <li>
-                    <router-link class="dropdown-item" to="/cambiar-password">
                         Modificar Usuario
-                    </router-link>
                     </li>
                     <li>
-                    <router-link class="dropdown-item" to="/cambiar-password">
                         🔐 Cambiar contraseña
-                    </router-link>
                     </li>
                     
                     <li><hr class="dropdown-divider" /></li>
