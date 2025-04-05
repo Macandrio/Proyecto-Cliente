@@ -1,127 +1,37 @@
 <template>
-  <!-- Botón hamburguesa -->
-  <div class="position-fixed top-0 start-0 z-3" style="margin-top: 80px; margin-left: 12px;">
-    <button class="btn btn-outline-light bg-dark border-0 shadow" type="button" data-bs-toggle="offcanvas"
-      data-bs-target="#sidePanel" style="font-size: 1.5rem; padding: 8px 16px;">
-      &#9776;
-    </button>
-  </div>
+  <MenuLateral />
 
-  <!-- Buscador -->
-  <div class="position-fixed top-0 end-0 z-3 p-3 buscador-wrapper" style="margin-top: 80px;">
-    <div class="input-group stylish-search">
-      <span class="input-group-text bg-light border-0">
-        <i class="bi bi-search text-dark"></i>
-      </span>
-      <input v-model="busqueda" @input="buscarProfesores" type="text" placeholder="Buscar profesor..."
-        class="form-control border-0 shadow-none bg-light text-dark" />
-    </div>
-  </div>
+  <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
 
-  <!-- Menú lateral -->
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="sidePanel" aria-labelledby="sidePanelLabel">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Menú lateral</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
-    </div>
-    <div class="offcanvas-body">
-      <input ref="fileInput" type="file" @change="handleFileUpload" style="display: none" />
-      <router-link to="/home" class="btn btn-primary w-100 mb-2">Inicio</router-link>
-      <button class="btn btn-primary w-100 mb-2" @click="triggerFileSelect">Subir archivo de datos</button>
-      <router-link to="/datos-profesorado" class="btn btn-primary w-100 mb-2">Datos profesorado</router-link>
-      <button class="btn btn-primary w-100 mb-2">Generar partes diario</button>
-      <button class="btn btn-primary w-100 mb-2">Ausencia</button>
-    </div>
-  </div>
-
-  <!-- Contenido principal -->
   <div class="container mt-5 pt-4">
     <div class="d-flex flex-column align-items-center" style="min-height: 80vh;">
-      <div
-        class="card tarjeta-horizontal d-flex flex-column flex-md-row align-items-center justify-content-between p-3 shadow-sm mb-3"
-        v-for="profesor in resultados" :key="profesor.idProfesor">
-        <!-- Imagen -->
-        <img :src="profesor.imagen || 'https://i.pinimg.com/236x/66/e6/23/66e6230aa7ce7107f9707493dee0d9ba.jpg'"
-          alt="Foto del profesor" class="img-fluid rounded" style="height: 100px; width: 100px; object-fit: cover;" />
-
-        <!-- Info -->
-        <div class="flex-grow-1 ms-md-3 mt-3 mt-md-0 text-center text-md-start">
-          <h5 class="mb-1">{{ profesor.nombre }}</h5>
-          <p class="mb-0 text-muted" v-if="profesor.departamento">{{ profesor.departamento }}</p>
-          <p class="mb-0" v-if="profesor.usuario"><strong>Email:</strong> {{ profesor.usuario.email }}</p>
-        </div>
-
-        <!-- Botones -->
-        <div class="d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
-          <template v-if="profesor.usuario">
-            <button class="btn btn-warning mb-2 w-100">Modificar usuario</button>
-            <button class="btn btn-danger w-100">Eliminar usuario</button>
-          </template>
-          <template v-else>
-            <button class="btn btn-success w-100" @click="mostrarFormularioCrear(profesor.idProfesor)">
-              {{ profesorSeleccionado === profesor.idProfesor ? 'Cerrar formulario' : 'Crear usuario' }}
-            </button>
-
-            <!-- Formulario desplegable SOLO para el profesor actual -->
-            <Transition name="slide-fade">
-              <div v-if="profesorSeleccionado === profesor.idProfesor" class="mt-3 p-3 border rounded w-100"
-                style="background-color: #f8f9fa;">
-                <h6 class="mb-3 text-center text-md-start">
-                  Crear usuario para <strong>{{ profesor.nombre }}</strong>
-                </h6>
-
-                <div class="mb-2">
-                  <label class="form-label">Email</label>
-                  <input type="email" class="form-control" v-model="formularios[profesor.idProfesor].email"
-                    placeholder="correo@ejemplo.com" />
-                  <div class="text-danger" v-if="erroresFormulario.email">
-                    {{ erroresFormulario.email }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Contraseña</label>
-                  <input type="password" class="form-control" v-model="formularios[profesor.idProfesor].password"
-                    placeholder="••••••" />
-                  <div class="text-danger" v-if="erroresFormulario.contraseña">
-                    {{ erroresFormulario.contraseña }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Rol</label>
-                  <select class="form-select" v-model="formularios[profesor.idProfesor].rol">
-                    <option disabled value="">Selecciona un rol</option>
-                    <option value="profesor">Profesor</option>
-                    <option value="administrador">Equipo directivo</option>
-                  </select>
-                  <div class="text-danger" v-if="erroresFormulario.rol">
-                    {{ erroresFormulario.rol }}
-                  </div>
-                </div>
-
-
-
-                <div class="d-flex gap-2">
-                  <button class="btn btn-primary w-100" :disabled="isLoading" @click="guardarUsuario(profesor)">
-                    {{ isLoading ? 'Guardando...' : 'Guardar usuario' }}
-                  </button>
-
-                  <button class="btn btn-outline-secondary w-100" @click="cancelarFormulario">
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-            </Transition>
-          </template>
-        </div>
-      </div>
+      <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
+        :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
+        :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
+        @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario" @eliminarUsuario="eliminarUsuario" @modificarUsuario="modificarUsuario"/>
     </div>
   </div>
+
+
+  <ModalMensaje
+  :visible="modal.visible"
+  :titulo="modal.titulo"
+  :mensaje="modal.mensaje"
+  :tipo="modal.tipo"
+  @cerrar="cerrarModal"
+/>
+
+
+
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import MenuLateral from '../components/MenuLateral.vue'
+import BuscadorProfesores from '../components/BuscadorProfesores.vue'
+import TarjetaProfesor from '../components/TarjetaProfesor.vue'
+import ModalMensaje from '../components/ModalMensaje.vue'
+
+import { ref, onMounted} from 'vue'
 import axios from 'axios'
 
 const busqueda = ref('')
@@ -132,6 +42,34 @@ const isLoading = ref(false)
 const erroresFormulario = ref({});
 
 
+// Modal genérico
+const modal = ref({
+  visible: false,
+  titulo: '',
+  mensaje: '',
+  tipo: 'info'
+})
+
+function mostrarModal(titulo, mensaje, tipo = 'info') {
+  modal.value = {
+    visible: true,
+    titulo,
+    mensaje,
+    tipo
+  }
+}
+
+function cerrarModal() {
+  modal.value.visible = false
+}
+
+// Buscar desde componente hijo
+function buscarProfesoresDesdeEvento(valor) {
+  busqueda.value = valor
+  buscarProfesores()
+}
+
+// Buscar profesores
 async function buscarProfesores() {
   if (busqueda.value.trim().length < 2) {
     obtenerTodosLosProfesores()
@@ -147,13 +85,14 @@ async function buscarProfesores() {
         }
       }
     )
-    console.log('🔍 Resultados búsqueda:', response.data)
     resultados.value = response.data
   } catch (error) {
     console.error('Error al buscar profesores:', error)
   }
 }
 
+
+// Obtener todos los profesores
 async function obtenerTodosLosProfesores() {
   try {
     const response = await axios.get('http://localhost:8081/api/profesores', {
@@ -168,9 +107,13 @@ async function obtenerTodosLosProfesores() {
   }
 }
 
+// optener todos los profesores al incio de la pagina que llama a obtenerTodosLosProfesores
 onMounted(() => {
   obtenerTodosLosProfesores()
 })
+
+
+// Obtener formulario
 
 function mostrarFormularioCrear(profesorId) {
   console.log('📌 ID recibido:', profesorId)
@@ -188,17 +131,22 @@ function mostrarFormularioCrear(profesorId) {
   }
 }
 
+
+// Funcion para cerrar el formulario
 function cancelarFormulario() {
   profesorSeleccionado.value = null
 }
 
+
+
+// Guardar usuario
 async function guardarUsuario(profesor) {
-  const datos = formularios.value[profesor.idProfesor];
-  erroresFormulario.value = {}; // limpiar errores previos
+  const datos = formularios.value[profesor.idProfesor]
+  erroresFormulario.value = {} // limpiar errores previos
 
   if (!datos?.email || !datos?.password || !datos?.rol) {
-    alert('Por favor, completa todos los campos.');
-    return;
+    mostrarModal('❌ Campos incompletos', 'Por favor, completa todos los campos.', 'warning')
+    return
   }
 
   const payload = {
@@ -206,9 +154,9 @@ async function guardarUsuario(profesor) {
     email: datos.email,
     contraseña: datos.password,
     rol: datos.rol
-  };
+  }
 
-  isLoading.value = true;
+  isLoading.value = true
 
   try {
     await axios.post(`http://localhost:8081/api/usuarios/crear-con-profesor/${profesor.idProfesor}`, payload, {
@@ -216,28 +164,84 @@ async function guardarUsuario(profesor) {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
       }
-    });
+    })
 
-    alert(`✅ Usuario creado y vinculado al profesor ${profesor.nombre}`);
-    profesorSeleccionado.value = null;
-    obtenerTodosLosProfesores();
+    mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${profesor.nombre}`, 'success')
+    profesorSeleccionado.value = null
+    obtenerTodosLosProfesores()
   } catch (error) {
-    isLoading.value = false;
-
-    // Si el servidor devolvió errores de validación
     if (error.response && error.response.status === 400 && typeof error.response.data === 'object') {
-      erroresFormulario.value = error.response.data;
-    } else if (error.response && error.response.status === 404) {
-      alert('❌ Profesor no encontrado.');
+      erroresFormulario.value = error.response.data
     } else {
-      alert('❌ Error al crear usuario.');
+      mostrarModal('❌ Error', 'No se pudo crear el usuario. Verifica los datos o si ya existe.', 'error')
     }
-
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
+
+// Función para borrar usuario
+async function eliminarUsuario(profesor) {
+  console.log("ID del usuario a eliminar:", profesor.usuario.id) // 👈 Aquí ahora imprime el correcto
+
+  if (!confirm(`¿Estás seguro de eliminar el usuario vinculado a ${profesor.nombre}?`)) return
+
+  try {
+    await axios.delete(`http://localhost:8081/api/usuarios/${profesor.usuario.id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    mostrarModal('✅ Usuario eliminado', `El usuario de ${profesor.nombre} ha sido eliminado.`, 'success')
+    obtenerTodosLosProfesores()
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error)
+    mostrarModal('❌ Error', 'No se pudo eliminar el usuario.', 'error')
+  }
+}
+
+// Modificar usuario
+async function modificarUsuario(usuarioActualizado) {
+  erroresFormulario.value = {} // limpiar errores previos
+
+  const { id, nombre, email, contraseña, rol } = usuarioActualizado
+
+  if (!email || !rol) {
+    mostrarModal('❌ Campos requeridos', 'Email y rol son obligatorios.', 'warning')
+    return
+  }
+
+  isLoading.value = true
+  console.log(localStorage.getItem('token'))
+  try {
+    await axios.put(`http://localhost:8081/api/usuarios/${id}`, {
+      nombre,
+      email,
+      contraseña: contraseña || null, // si viene vacío, no se actualiza
+      rol
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    mostrarModal('✅ Usuario actualizado', `El usuario de ${nombre} ha sido modificado correctamente.`, 'success')
+    profesorSeleccionado.value = null
+    obtenerTodosLosProfesores()
+  } catch (error) {
+    if (error.response?.status === 400 && typeof error.response.data === 'object') {
+      erroresFormulario.value = error.response.data
+    } else {
+      console.error('Error al actualizar usuario:', error)
+      mostrarModal('❌ Error', 'No se pudo actualizar el usuario.', 'error')
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 
 
 </script>
@@ -302,5 +306,39 @@ async function guardarUsuario(profesor) {
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 </style>

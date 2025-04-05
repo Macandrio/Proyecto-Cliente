@@ -7,6 +7,8 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import Menu from './components/Menu.vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 const route = useRoute()
 

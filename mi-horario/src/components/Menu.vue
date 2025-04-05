@@ -15,7 +15,7 @@
           to="/perfil"
           class="btn btn-outline-light ms-auto d-lg-none fw-bold"
         >
-          👤 {{ auth.username }}
+          👤 {{ auth.usuario.nombre }}
         </router-link>
 
 
@@ -32,7 +32,7 @@
                 role="button"
                 aria-expanded="false"
               >
-              👤 {{ nombreUsuario }}
+              👤 {{ auth.usuario.nombre }}
               </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
                     <li>
