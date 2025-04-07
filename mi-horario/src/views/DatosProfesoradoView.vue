@@ -1,58 +1,51 @@
 <template>
   <MenuLateral />
+
+
   <div class="main-content mt-5 pt-4 px-3">
     <div class="mb-4 d-flex justify-content-center">
       <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
     </div>
 
-    <div class="scrollable-profesores d-flex flex-column align-items-center">
-      <TarjetaProfesor
-        v-for="profesor in resultados"
-        :key="profesor.idProfesor"
-        :profesor="profesor"
-        :profesorSeleccionado="profesorSeleccionado"
-        :formulario="formularios[profesor.idProfesor] || {}"
-        :errores="erroresFormulario"
-        :isLoading="isLoading"
-        @toggleFormulario="mostrarFormularioCrear"
-        @guardarUsuario="guardarUsuario"
-        @cancelarFormulario="cancelarFormulario"
-        @eliminarUsuario="eliminarUsuario"
-        @modificarUsuario="modificarUsuario"
-      />
-    </div>
 
-    <!-- Formulario -->
-    <div class="formulario-container ms-5">
-        <FormularioCrearUsuario
-          v-if="profesorSeleccionado && !formularios[profesorSeleccionado].id"
-          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)"
-          :errores="erroresFormulario"
-          :isLoading="isLoading"
-          @guardar="$emit('guardarUsuario', $event)"
-          @cancelar="$emit('cancelarFormulario')"
-        />
-        <FormularioEditarUsuario
-          v-if="profesorSeleccionado && formularios[profesorSeleccionado].id"
-          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)"
-          :errores="erroresFormulario"
-          :isLoading="isLoading"
-          @actualizar="$emit('modificarUsuario', $event)"
-          @cancelar="$emit('cancelarFormulario')"
-        />
+
+    <div class="d-flex justify-content-between">
+      <!-- Lista de Profesores -->
+      <div class="container-fluid d-flex justify-content-center">
+        <!-- Lista de Profesores -->
+        <div class="profesores-lista" style="flex: 1; margin-right: 20px;">
+          <div class="scrollable-profesores d-flex flex-column align-items-center">
+            <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
+              :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
+              :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
+              @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario"
+              @eliminarUsuario="eliminarUsuario" @modificarUsuario="modificarUsuario" />
+
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="formulario-container d-flex justify-content-center"
+          :style="{ display: profesorSeleccionado ? 'block' : 'none' }">
+          <div class="formulario-content">
+            <FormularioCrearUsuario v-if="profesorSeleccionado && action === 'create'"
+              :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
+              :isLoading="isLoading" @guardar="guardarUsuario" @cancelar="cancelarFormulario" />
+            <FormularioEditarUsuario v-if="profesorSeleccionado && action === 'edit'"
+              :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
+              :isLoading="isLoading" @actualizar="modificarUsuario" @cancelar="cancelarFormulario" />
+          </div>
+        </div>
       </div>
     </div>
 
-    
-  <ModalMensaje
-    :visible="modal.visible"
-    :titulo="modal.titulo"
-    :mensaje="modal.mensaje"
-    :tipo="modal.tipo"
-    @cerrar="cerrarModal"
-  />
-</template>
 
+  </div>
+
+
+  <ModalMensaje :visible="modal.visible" :titulo="modal.titulo" :mensaje="modal.mensaje" :tipo="modal.tipo"
+    @cerrar="cerrarModal" />
+</template>
 
 
 <script setup>
@@ -60,17 +53,53 @@ import MenuLateral from '../components/MenuLateral.vue'
 import BuscadorProfesores from '../components/BuscadorProfesores.vue'
 import TarjetaProfesor from '../components/TarjetaProfesor.vue'
 import ModalMensaje from '../components/ModalMensaje.vue'
+import FormularioEditarUsuario from '../components/FormularioEditarUsuario.vue'
+import FormularioCrearUsuario from '../components/FormularioCrearUsuario.vue'
 
-import { ref, onMounted} from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const busqueda = ref('')
 const resultados = ref([])
-const profesorSeleccionado = ref(null)
+const profesorSeleccionado = ref(null)  // Solo el ID del profesor
 const formularios = ref({})
 const isLoading = ref(false)
-const erroresFormulario = ref({});
+const erroresFormulario = ref({})
+const action = ref('')  // Asegúrate de que action sea un ref
 
+
+// Aquí puedes agregar un console log para verificar si los valores de profesorSeleccionado y action son correctos
+console.log('profesorSeleccionado:', profesorSeleccionado.value)
+console.log('action:', action.value)
+
+
+// Mostrar formulario de creación o edición
+function mostrarFormularioCrear({ profesorId, action: actionType }) {
+  console.log('Datos recibidos en mostrarFormularioCrear:', { profesorId, action: actionType });
+
+  if (profesorSeleccionado.value === profesorId) {
+    // Si ya está seleccionado el mismo profesor, cerrar el formulario
+    profesorSeleccionado.value = null;
+    action.value = '';
+    console.log("Formulario cerrado");
+  } else {
+    // Si no está seleccionado, mostrar el formulario
+    profesorSeleccionado.value = profesorId;
+    action.value = actionType;
+    console.log("Formulario debe abrirse");
+  }
+
+  // Verificación de los valores
+  console.log('profesorSeleccionado:', profesorSeleccionado.value);
+  console.log('action:', action.value);
+}
+
+
+// Opcionalmente, usa watch para verificar si los cambios se detectan correctamente
+watch([profesorSeleccionado, action], () => {
+  console.log('profesorSeleccionado:', profesorSeleccionado.value)
+  console.log('action:', action.value)
+})
 
 // Modal genérico
 const modal = ref({
@@ -92,6 +121,8 @@ function mostrarModal(titulo, mensaje, tipo = 'info') {
 function cerrarModal() {
   modal.value.visible = false
 }
+
+
 
 // Buscar desde componente hijo
 function buscarProfesoresDesdeEvento(valor) {
@@ -121,7 +152,6 @@ async function buscarProfesores() {
   }
 }
 
-
 // Obtener todos los profesores
 async function obtenerTodosLosProfesores() {
   try {
@@ -130,90 +160,95 @@ async function obtenerTodosLosProfesores() {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
-    console.log('📚 Todos los profesores:', response.data)
+    // console.log('📚 Todos los profesores:', response.data)
     resultados.value = response.data
   } catch (error) {
     console.error('Error al obtener profesores:', error)
   }
 }
 
-// optener todos los profesores al incio de la pagina que llama a obtenerTodosLosProfesores
 onMounted(() => {
   obtenerTodosLosProfesores()
 })
 
 
-// Obtener formulario
-
-function mostrarFormularioCrear(profesorId) {
-  console.log('📌 ID recibido:', profesorId)
-
-  if (profesorSeleccionado.value === profesorId) {
-    profesorSeleccionado.value = null
-  } else {
-    profesorSeleccionado.value = profesorId
-
-    // SIEMPRE reinicia los campos al abrir
-    formularios.value[profesorId] = {
-      email: '',
-      password: ''
-    }
-  }
-}
-
-
-// Funcion para cerrar el formulario
+// Cerrar formulario
 function cancelarFormulario() {
   profesorSeleccionado.value = null
+  action.value = ''  // Resetear la acción
 }
 
 
 
-// Guardar usuario
-async function guardarUsuario(profesor) {
-  const datos = formularios.value[profesor.idProfesor]
-  erroresFormulario.value = {} // limpiar errores previos
 
-  if (!datos?.email || !datos?.password || !datos?.rol) {
-    mostrarModal('❌ Campos incompletos', 'Por favor, completa todos los campos.', 'warning')
-    return
+async function guardarUsuario(datosFormulario) {
+  const { idProfesor, email, password, rol, nombre } = datosFormulario;
+
+  if (!email || !password || !rol || !nombre) {
+    mostrarModal('❌ Campos incompletos', 'Por favor, completa todos los campos.', 'warning');
+    return;
   }
 
   const payload = {
-    nombre: profesor.nombre,
-    email: datos.email,
-    contraseña: datos.password,
-    rol: datos.rol
-  }
+    idProfesor,
+    nombre,
+    email,
+    contraseña: password,
+    rol
+  };
 
-  isLoading.value = true
+  console.log("Payload que se enviará:", payload);
+
+  isLoading.value = true;
 
   try {
-    await axios.post(`http://localhost:8081/api/usuarios/crear-con-profesor/${profesor.idProfesor}`, payload, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+    const response = await axios.post(
+      `http://localhost:8081/api/usuarios/crear-con-profesor/${idProfesor}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
       }
-    })
+    );
 
-    mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${profesor.nombre}`, 'success')
-    profesorSeleccionado.value = null
-    obtenerTodosLosProfesores()
+    console.log("Respuesta del servidor:", response);
+    mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success');
+    profesorSeleccionado.value = null;
+    obtenerTodosLosProfesores();
+
   } catch (error) {
-    if (error.response && error.response.status === 400 && typeof error.response.data === 'object') {
-      erroresFormulario.value = error.response.data
+    if (error.response) {
+      console.error('Error en la respuesta del servidor:', error.response);
+
+      // Solo pasar los errores al formulario si son validaciones
+      if (error.response.status === 400 && error.response.data) {
+        console.log("Errores de validación:", error.response.data);
+        erroresFormulario.value = error.response.data; // Mostrar solo errores de validación
+      } else {
+        // Si es otro tipo de error, mostrar el modal de error
+        mostrarModal('❌ Error', 'Ese usuario ya existe.', 'error');
+      }
     } else {
-      mostrarModal('❌ Error', 'No se pudo crear el usuario. Verifica los datos o si ya existe.', 'error')
+      console.error("Error desconocido:", error);
+      mostrarModal('❌ Error', 'Ocurrió un error inesperado.', 'error');
     }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
+
+
+
+
+
+
 
 
 // Función para borrar usuario
 async function eliminarUsuario(profesor) {
-  console.log("ID del usuario a eliminar:", profesor.usuario.id) // 👈 Aquí ahora imprime el correcto
+  console.log("ID del usuario a eliminar:", profesor.usuario.id)
 
   if (!confirm(`¿Estás seguro de eliminar el usuario vinculado a ${profesor.nombre}?`)) return
 
@@ -232,71 +267,75 @@ async function eliminarUsuario(profesor) {
   }
 }
 
+
+
+
 // Modificar usuario
-async function modificarUsuario(usuarioActualizado) {
-  erroresFormulario.value = {} // limpiar errores previos
+async function modificarUsuario(datosFormulario) {
+  const { idProfesor, email, password, rol, nombre } = datosFormulario;
 
-  const { id, nombre, email, contraseña, rol } = usuarioActualizado
+  const payload = {
+    idProfesor,
+    nombre,
+    email,
+    contraseña: password,
+    rol
+  };
 
-  if (!email || !rol) {
-    mostrarModal('❌ Campos requeridos', 'Email y rol son obligatorios.', 'warning')
-    return
-  }
+  isLoading.value = true;
 
-  isLoading.value = true
-  console.log(localStorage.getItem('token'))
   try {
-    await axios.put(`http://localhost:8081/api/usuarios/${id}`, {
-      nombre,
-      email,
-      contraseña: contraseña || null, // si viene vacío, no se actualiza
-      rol
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+    const response = await axios.put(
+      `http://localhost:8081/api/usuarios/${idProfesor}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
       }
-    })
+    );
 
-    mostrarModal('✅ Usuario actualizado', `El usuario de ${nombre} ha sido modificado correctamente.`, 'success')
-    profesorSeleccionado.value = null
-    obtenerTodosLosProfesores()
+    console.log("Respuesta del servidor:", response);
+    mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success');
+    profesorSeleccionado.value = null;
+    obtenerTodosLosProfesores();
+
   } catch (error) {
-    if (error.response?.status === 400 && typeof error.response.data === 'object') {
-      erroresFormulario.value = error.response.data
+    if (error.response) {
+      console.error('Error en la respuesta del servidor:', error.response);
+
+      if (error.response.status === 400 && error.response.data) {
+        // Mostrar errores de validación
+        console.log("Errores de validación:", error.response.data);
+        erroresFormulario.value = error.response.data;  // Mostrar solo errores de validación
+      } else {
+        mostrarModal('❌ Error', 'El usuario ya existe.', 'error');
+      }
     } else {
-      console.error('Error al actualizar usuario:', error)
-      mostrarModal('❌ Error', 'No se pudo actualizar el usuario.', 'error')
+      console.error("Error desconocido:", error);
+      mostrarModal('❌ Error', 'Ocurrió un error inesperado.', 'error');
     }
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
+
+
+
+
+
+
+
 
 
 </script>
 
+
+
+
+
 <style scoped>
-
-.tarjeta-horizontal {
-  width: 750px;
-  max-width: 900px;
-  min-height: 120px;
-  border-radius: 12px;
-  transition: all 0.2s ease-in-out;
-}
-
-.tarjeta-horizontal:hover {
-  transform: scale(1.01);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Contenido principal debajo del menú */
-.main-content {
-  max-width: 100%;
-  margin: 0 auto;
-}
-
 /* En móviles, añade más separación desde arriba */
 @media (max-width: 800px) {
   .main-content {
@@ -383,7 +422,4 @@ async function modificarUsuario(usuarioActualizado) {
   opacity: 0;
   transform: translateY(-10px);
 }
-
-
-
 </style>

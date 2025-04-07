@@ -14,53 +14,27 @@
     <!-- Botones -->
     <div class="d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
       <template v-if="profesor.usuario">
-        <button class="btn btn-warning mb-2 w-100" @click="$emit('toggleFormulario', profesor.idProfesor)">
+        <button class="btn btn-warning mb-2 w-100" 
+          @click="handleToggleFormulario(profesor.idProfesor, 'edit')">
           {{ profesorSeleccionado === profesor.idProfesor ? 'Cerrar formulario' : 'Modificar usuario' }}
         </button>
         <button class="btn btn-danger w-100" @click="$emit('eliminarUsuario', profesor)">
           Eliminar usuario
         </button>
-
-        <FormularioEditarUsuario
-          v-if="profesorSeleccionado === profesor.idProfesor"
-          :profesor="profesor"
-          :errores="errores"
-          :isLoading="isLoading"
-          @actualizar="$emit('modificarUsuario', $event)"
-          @cancelar="$emit('cancelarFormulario')"
-        />
       </template>
 
       <template v-else>
-        <button class="btn btn-success w-100" @click="$emit('toggleFormulario', profesor.idProfesor)">
+        <button class="btn btn-success w-100" 
+          @click="handleToggleFormulario(profesor.idProfesor, 'create')">
           {{ profesorSeleccionado === profesor.idProfesor ? 'Cerrar formulario' : 'Crear usuario' }}
         </button>
-
-        <Transition name="slide-fade">
-          <div v-if="profesorSeleccionado === profesor.idProfesor" class="mt-3 p-3 border rounded w-100" style="background-color: #f8f9fa;">
-            <h6 class="mb-3 text-center text-md-start">
-              Crear usuario para <strong>{{ profesor.nombre }}</strong>
-            </h6>
-
-            <FormularioCrearUsuario
-              :profesor="profesor"
-              :errores="errores"
-              :isLoading="isLoading"
-              @guardar="$emit('guardarUsuario', $event)"
-              @cancelar="$emit('cancelarFormulario')"
-            />
-          </div>
-        </Transition>
       </template>
     </div>
   </div>
-
-  
 </template>
 
 <script setup>
-import FormularioEditarUsuario from './FormularioEditarUsuario.vue'
-import FormularioCrearUsuario from './FormularioCrearUsuario.vue'
+import { defineProps, defineEmits } from 'vue'
 
 defineProps({
   profesor: Object,
@@ -70,13 +44,21 @@ defineProps({
   isLoading: Boolean
 })
 
-defineEmits([
-  'toggleFormulario',
-  'guardarUsuario',
-  'cancelarFormulario',
-  'eliminarUsuario',
-  'modificarUsuario'
+const emit = defineEmits([
+  'toggleFormulario',  // Para abrir o cerrar el formulario
+  'guardarUsuario',    // Para guardar el usuario
+  'cancelarFormulario',// Para cancelar la acción
+  'eliminarUsuario',   // Para eliminar el usuario
+  'modificarUsuario'   // Para modificar el usuario
 ])
+
+// Manejo del clic en los botones "Crear" o "Modificar" usuario
+function handleToggleFormulario(profesorId, action) {
+  console.log('Botón clickeado:', { profesorId, action })  // Ver qué datos se están pasando
+  // Emitimos el evento con el objeto { profesorId, action }
+  emit('toggleFormulario', { profesorId, action })  // Aquí usamos `emit` de `defineEmits`
+}
+
 </script>
 
 <style scoped>
