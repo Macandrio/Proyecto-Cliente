@@ -1,6 +1,5 @@
 <template>
-  <div
-    class="card tarjeta-horizontal d-flex flex-column flex-md-row align-items-center justify-content-between p-3 shadow-sm mb-3">
+  <div class="card tarjeta-horizontal d-flex flex-column flex-md-row align-items-center justify-content-between p-3 shadow-sm mb-3">
     <!-- Imagen -->
     <img :src="profesor.imagen || 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'"
       alt="Foto del profesor" class="img-fluid rounded" style="height: 100px; width: 100px; object-fit: cover;" />
@@ -38,52 +37,30 @@
         </button>
 
         <Transition name="slide-fade">
-          <div v-if="profesorSeleccionado === profesor.idProfesor" class="mt-3 p-3 border rounded w-100"
-            style="background-color: #f8f9fa;">
+          <div v-if="profesorSeleccionado === profesor.idProfesor" class="mt-3 p-3 border rounded w-100" style="background-color: #f8f9fa;">
             <h6 class="mb-3 text-center text-md-start">
               Crear usuario para <strong>{{ profesor.nombre }}</strong>
             </h6>
 
-            <div class="mb-2">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" v-model="formulario.email" placeholder="correo@ejemplo.com" />
-              <div class="text-danger" v-if="errores.email">{{ errores.email }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Contraseña</label>
-              <input type="password" class="form-control" v-model="formulario.password" placeholder="••••••" />
-              <div class="text-danger" v-if="errores.contraseña">{{ errores.contraseña }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Rol</label>
-              <select class="form-select" v-model="formulario.rol">
-                <option disabled value="">Selecciona un rol</option>
-                <option value="profesor">Profesor</option>
-                <option value="administrador">Equipo directivo</option>
-              </select>
-              <div class="text-danger" v-if="errores.rol">{{ errores.rol }}</div>
-            </div>
-
-            <div class="d-flex gap-2">
-              <button class="btn btn-primary w-100" :disabled="isLoading" @click="$emit('guardarUsuario', profesor)">
-                {{ isLoading ? 'Guardando...' : 'Guardar usuario' }}
-              </button>
-
-              <button class="btn btn-outline-secondary w-100" @click="$emit('cancelarFormulario')">
-                Cancelar
-              </button>
-            </div>
+            <FormularioCrearUsuario
+              :profesor="profesor"
+              :errores="errores"
+              :isLoading="isLoading"
+              @guardar="$emit('guardarUsuario', $event)"
+              @cancelar="$emit('cancelarFormulario')"
+            />
           </div>
         </Transition>
       </template>
     </div>
   </div>
+
+  
 </template>
 
 <script setup>
 import FormularioEditarUsuario from './FormularioEditarUsuario.vue'
+import FormularioCrearUsuario from './FormularioCrearUsuario.vue'
 
 defineProps({
   profesor: Object,

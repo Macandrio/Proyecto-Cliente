@@ -1,38 +1,86 @@
 <template>
-    <div class="container d-flex align-items-center justify-content-center min-vh-100">
-      <div class="card p-4 shadow" style="max-width: 400px; width: 100%;">
-        <h1 class="text-center mb-4">🕒 Mi Horario</h1>
+  <div class="bg-gradient">
+    <div class="login-wrapper">
+      <div class="card shadow p-4 w-100">
+        <!-- Logo -->
+        <div class="text-center mb-4">
+          <img src="../assets/logo_iespsur.jpeg" alt="logo" style="width: 60px;" />
+        </div>
+
         <form @submit.prevent="login">
           <div class="mb-3">
-            <input v-model="username" type="text" class="form-control" placeholder="Usuario" required />
+            <label class="form-label text-muted">Correo Electrónico</label>
+            <input v-model="username" type="email" class="form-control" placeholder="carlos.garcia@iespoligonosur.org" required />
           </div>
+
           <div class="mb-3">
-            <input v-model="password" type="password" class="form-control" placeholder="Contraseña" required />
+            <label class="form-label text-muted">Contraseña</label>
+            <input v-model="password" type="password" class="form-control" placeholder="••••••••" required />
           </div>
-          <button class="btn btn-primary w-100" type="submit">Entrar</button>
+
+          <div v-if="errorLogin" class="text-danger text-center mb-3">
+            Credenciales incorrectas
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import { useRouter } from 'vue-router'
-  import { useAuthStore } from '../stores/auth'
-  
-  const router = useRouter()
-  const auth = useAuthStore()
-  
-  const username = ref('')
-  const password = ref('')
-  
-  async function login() {
-    const ok = await auth.login(username.value, password.value)
-    if (ok) {
-      router.push('/home')
-    } else {
-      alert('Credenciales incorrectas')
-    }
+  </div>
+</template>
+
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+
+const username = ref('')
+const password = ref('')
+const errorLogin = ref(false)
+
+async function login() {
+  errorLogin.value = false
+  const ok = await auth.login(username.value, password.value)
+  if (ok) {
+    router.push('/home')
+  } else {
+    errorLogin.value = true
   }
-  </script>
-  
+}
+</script>
+
+<style>
+html, body, #app {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bg-gradient {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #2c3e50 0%, #4ca1af 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-wrapper {
+  max-width: 400px;
+  width: 100%;
+  padding: 0 16px; /* margen lateral para que no toque los bordes */
+}
+
+</style>

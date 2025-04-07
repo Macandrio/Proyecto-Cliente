@@ -1,29 +1,59 @@
 <template>
   <MenuLateral />
-
-  <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
-
-  <div class="container mt-5 pt-4">
-    <div class="d-flex flex-column align-items-center" style="min-height: 80vh;">
-      <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
-        :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
-        :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
-        @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario" @eliminarUsuario="eliminarUsuario" @modificarUsuario="modificarUsuario"/>
+  <div class="main-content mt-5 pt-4 px-3">
+    <div class="mb-4 d-flex justify-content-center">
+      <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
     </div>
-  </div>
 
+    <div class="scrollable-profesores d-flex flex-column align-items-center">
+      <TarjetaProfesor
+        v-for="profesor in resultados"
+        :key="profesor.idProfesor"
+        :profesor="profesor"
+        :profesorSeleccionado="profesorSeleccionado"
+        :formulario="formularios[profesor.idProfesor] || {}"
+        :errores="erroresFormulario"
+        :isLoading="isLoading"
+        @toggleFormulario="mostrarFormularioCrear"
+        @guardarUsuario="guardarUsuario"
+        @cancelarFormulario="cancelarFormulario"
+        @eliminarUsuario="eliminarUsuario"
+        @modificarUsuario="modificarUsuario"
+      />
+    </div>
 
+    <!-- Formulario -->
+    <div class="formulario-container ms-5">
+        <FormularioCrearUsuario
+          v-if="profesorSeleccionado && !formularios[profesorSeleccionado].id"
+          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)"
+          :errores="erroresFormulario"
+          :isLoading="isLoading"
+          @guardar="$emit('guardarUsuario', $event)"
+          @cancelar="$emit('cancelarFormulario')"
+        />
+        <FormularioEditarUsuario
+          v-if="profesorSeleccionado && formularios[profesorSeleccionado].id"
+          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)"
+          :errores="erroresFormulario"
+          :isLoading="isLoading"
+          @actualizar="$emit('modificarUsuario', $event)"
+          @cancelar="$emit('cancelarFormulario')"
+        />
+      </div>
+    </div>
+
+    
   <ModalMensaje
-  :visible="modal.visible"
-  :titulo="modal.titulo"
-  :mensaje="modal.mensaje"
-  :tipo="modal.tipo"
-  @cerrar="cerrarModal"
-/>
-
-
-
+    :visible="modal.visible"
+    :titulo="modal.titulo"
+    :mensaje="modal.mensaje"
+    :tipo="modal.tipo"
+    @cerrar="cerrarModal"
+  />
 </template>
+
+
 
 <script setup>
 import MenuLateral from '../components/MenuLateral.vue'
@@ -247,6 +277,7 @@ async function modificarUsuario(usuarioActualizado) {
 </script>
 
 <style scoped>
+
 .tarjeta-horizontal {
   width: 750px;
   max-width: 900px;
@@ -260,15 +291,22 @@ async function modificarUsuario(usuarioActualizado) {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 576px) {
-  .container {
-    margin-top: 160px !important;
+/* Contenido principal debajo del menú */
+.main-content {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* En móviles, añade más separación desde arriba */
+@media (max-width: 800px) {
+  .main-content {
+    margin-top: 130px !important;
   }
 }
 
+/* Estilo del buscador */
 .stylish-search {
   border-radius: 40px;
-  overflow: hidden;
   background-color: #f8f9fa;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
@@ -278,36 +316,28 @@ async function modificarUsuario(usuarioActualizado) {
   box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
 }
 
-.buscador-wrapper {
-  width: 350px;
-}
-
 .stylish-search input::placeholder {
   color: #6c757d;
   font-style: italic;
 }
 
-@media (max-width: 576px) {
-  .buscador-wrapper {
-    width: 90%;
-    right: 0;
-    left: 0;
-    margin: auto;
-  }
+/* Scroll tarjetas */
+.scrollable-profesores {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+  width: 100%;
+  padding-right: 10px;
+
+  /* Ocultar scroll en la mayoría de navegadores */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Transición slide-fade */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
+.scrollable-profesores::-webkit-scrollbar {
+  display: none;
 }
 
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -341,4 +371,19 @@ async function modificarUsuario(usuarioActualizado) {
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+/* Transición */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+
+
 </style>
