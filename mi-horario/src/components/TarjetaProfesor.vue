@@ -54,7 +54,6 @@ const emit = defineEmits([
 
 // Manejo del clic en los botones "Crear" o "Modificar" usuario
 function handleToggleFormulario(profesorId, action) {
-  console.log('Botón clickeado:', { profesorId, action })  // Ver qué datos se están pasando
   // Emitimos el evento con el objeto { profesorId, action }
   emit('toggleFormulario', { profesorId, action })  // Aquí usamos `emit` de `defineEmits`
 }

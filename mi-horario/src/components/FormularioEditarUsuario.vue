@@ -34,8 +34,13 @@
   </div>
 </template>
 
+
+
 <script setup>
 import { reactive, watch } from 'vue'
+
+const emit = defineEmits();
+
 
 const props = defineProps({
   profesor: Object,   // Recibe el objeto completo del profesor
@@ -43,43 +48,30 @@ const props = defineProps({
   isLoading: Boolean
 })
 
-const emit = defineEmits(['actualizar', 'cancelar'])
-
 const form = reactive({
-  email: props.profesor?.usuario?.email || '',
+  email: props.profesor.usuario.email ,
   password: '',  // La contraseña puede ser opcional
-  rol: props.profesor?.usuario?.rol || ''
+  rol: props.profesor.usuario.rol
 })
 
 // Usar un watcher para actualizar el formulario cada vez que cambie el profesor
 watch(() => props.profesor, (nuevoProfesor) => {
-  console.log("Nuevo profesor recibido:", nuevoProfesor);
   form.email = nuevoProfesor?.usuario?.email || '';  // Actualiza el email con los nuevos valores
   form.password = '';  // Puedes limpiar la contraseña si es necesario
   form.rol = nuevoProfesor?.usuario?.rol || '';  // Actualiza el rol
 }, { immediate: true });  // Con 'immediate: true', se ejecutará también en la inicialización
 
+// Función para emitir el evento
 function enviar() {
-  // Si la contraseña está vacía, se asegura de que se envíe una cadena vacía
-  const passwordToSend = form.password || "";  // Si la contraseña está vacía, se envía una cadena vacía
-
-  console.log("Datos que se enviarán al padre:", {
-    idProfesor: props.profesor.idProfesor,
-    nombre: props.profesor.nombre,  // Nombre incluido en el payload
-    email: form.email,
-    password: passwordToSend,  // Se envía la contraseña vacía si está vacía
-    rol: form.rol
-  });
-
-  // Emitir los datos al padre
   emit('actualizar', {
-    idProfesor: props.profesor.idProfesor,
-    nombre: props.profesor.nombre,  // Pasar el nombre al padre
-    email: form.email,
-    password: passwordToSend,  // Enviar la contraseña vacía si está vacía
-    rol: form.rol
+    idUsuario: props.profesor.usuario.id, // Usar el ID del profesor (usuario)
+    nombre: props.profesor.nombre,          // Pasar el nombre del profesor (no del formulario)
+    email: form.email,                      // Pasar el email desde el formulario
+    rol: form.rol,                          // Pasar el rol desde el formulario
+    password: form.password || "",         // Si no hay contraseña, enviar una cadena vacía
   });
 }
+
 
 </script>
 

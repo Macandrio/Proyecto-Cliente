@@ -44,7 +44,7 @@
     isLoading: Boolean
   })
   
-  const emit = defineEmits(['guardar', 'cancelar'])
+  const emit = defineEmits('guardar')
   
   const form = reactive({
     email: '',
@@ -53,16 +53,7 @@
   })
   
   function guardar() {
-  // Imprimir los datos que se están enviando al padre
-  console.log('Datos que se envían al padre:', {
-    idProfesor: props.profesor.idProfesor,
-    nombre: props.profesor.nombre,
-    email: form.email,
-    password: form.password,
-    rol: form.rol
-  });
-
-  // Emitir los datos hacia el componente padre
+    // Emitir los datos hacia el componente padre
   emit('guardar', {
     idProfesor: props.profesor.idProfesor,
     nombre: props.profesor.nombre,

@@ -30,10 +30,10 @@
           <div class="formulario-content">
             <FormularioCrearUsuario v-if="profesorSeleccionado && action === 'create'"
               :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
-              :isLoading="isLoading" @guardar="guardarUsuario" @cancelar="cancelarFormulario" />
+              :isLoading="isLoading" @guardar="guardarUsuario" />
             <FormularioEditarUsuario v-if="profesorSeleccionado && action === 'edit'"
               :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
-              :isLoading="isLoading" @actualizar="modificarUsuario" @cancelar="cancelarFormulario" />
+              :isLoading="isLoading" @actualizar="modificarUsuario"/>
           </div>
         </div>
       </div>
@@ -67,39 +67,24 @@ const isLoading = ref(false)
 const erroresFormulario = ref({})
 const action = ref('')  // Asegúrate de que action sea un ref
 
-
-// Aquí puedes agregar un console log para verificar si los valores de profesorSeleccionado y action son correctos
-console.log('profesorSeleccionado:', profesorSeleccionado.value)
-console.log('action:', action.value)
+// Al entrar en la pagina automaticamente
+onMounted(() => {
+  obtenerTodosLosProfesores()
+})
 
 
 // Mostrar formulario de creación o edición
 function mostrarFormularioCrear({ profesorId, action: actionType }) {
-  console.log('Datos recibidos en mostrarFormularioCrear:', { profesorId, action: actionType });
-
   if (profesorSeleccionado.value === profesorId) {
     // Si ya está seleccionado el mismo profesor, cerrar el formulario
     profesorSeleccionado.value = null;
     action.value = '';
-    console.log("Formulario cerrado");
   } else {
     // Si no está seleccionado, mostrar el formulario
     profesorSeleccionado.value = profesorId;
     action.value = actionType;
-    console.log("Formulario debe abrirse");
   }
-
-  // Verificación de los valores
-  console.log('profesorSeleccionado:', profesorSeleccionado.value);
-  console.log('action:', action.value);
 }
-
-
-// Opcionalmente, usa watch para verificar si los cambios se detectan correctamente
-watch([profesorSeleccionado, action], () => {
-  console.log('profesorSeleccionado:', profesorSeleccionado.value)
-  console.log('action:', action.value)
-})
 
 // Modal genérico
 const modal = ref({
@@ -121,7 +106,6 @@ function mostrarModal(titulo, mensaje, tipo = 'info') {
 function cerrarModal() {
   modal.value.visible = false
 }
-
 
 
 // Buscar desde componente hijo
@@ -167,18 +151,11 @@ async function obtenerTodosLosProfesores() {
   }
 }
 
-onMounted(() => {
-  obtenerTodosLosProfesores()
-})
-
-
 // Cerrar formulario
 function cancelarFormulario() {
   profesorSeleccionado.value = null
   action.value = ''  // Resetear la acción
 }
-
-
 
 
 async function guardarUsuario(datosFormulario) {
@@ -240,12 +217,6 @@ async function guardarUsuario(datosFormulario) {
 }
 
 
-
-
-
-
-
-
 // Función para borrar usuario
 async function eliminarUsuario(profesor) {
   console.log("ID del usuario a eliminar:", profesor.usuario.id)
@@ -272,21 +243,29 @@ async function eliminarUsuario(profesor) {
 
 // Modificar usuario
 async function modificarUsuario(datosFormulario) {
-  const { idProfesor, email, password, rol, nombre } = datosFormulario;
+  const { idUsuario, email, password, rol, nombre } = datosFormulario;
+  // Asegúrate de que el idUsuario no sea nulo o indefinido
+  console.log(idUsuario + email + password + rol + nombre)
+  if (!idUsuario) {
+    mostrarModal('❌ Error', 'El ID del usuario no puede ser nulo.', 'error');
+    return;
+  }
 
   const payload = {
-    idProfesor,
+    idUsuario,     // Cambiado a idUsuario
     nombre,
     email,
     contraseña: password,
     rol
   };
 
+  console.log("Datos a enviar al backend:", payload);
+
   isLoading.value = true;
 
   try {
     const response = await axios.put(
-      `http://localhost:8081/api/usuarios/${idProfesor}`,
+      `http://localhost:8081/api/usuarios/${idUsuario}`, // Cambiado a idUsuario en la URL
       payload,
       {
         headers: {
@@ -298,33 +277,33 @@ async function modificarUsuario(datosFormulario) {
 
     console.log("Respuesta del servidor:", response);
     mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success');
-    profesorSeleccionado.value = null;
-    obtenerTodosLosProfesores();
+    profesorSeleccionado.value = null;  // Puedes cambiar esto a 'usuarioSeleccionado' si corresponde
+    obtenerTodosLosProfesores();  // O cambiar a 'obtenerTodosLosUsuarios' si aplica
 
   } catch (error) {
+    // Manejo de errores
     if (error.response) {
       console.error('Error en la respuesta del servidor:', error.response);
 
+      // Solo pasar los errores al formulario si son validaciones
       if (error.response.status === 400 && error.response.data) {
-        // Mostrar errores de validación
         console.log("Errores de validación:", error.response.data);
-        erroresFormulario.value = error.response.data;  // Mostrar solo errores de validación
+        erroresFormulario.value = error.response.data; // Mostrar solo errores de validación
+        
       } else {
-        mostrarModal('❌ Error', 'El usuario ya existe.', 'error');
+        // Si es otro tipo de error
+        mostrarModal('❌ Error', 'El usuario ya existe o hay otro error.', 'error');
       }
     } else {
       console.error("Error desconocido:", error);
       mostrarModal('❌ Error', 'Ocurrió un error inesperado.', 'error');
     }
+
   } finally {
     isLoading.value = false;
   }
+
 }
-
-
-
-
-
 
 
 
