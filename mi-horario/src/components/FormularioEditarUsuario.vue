@@ -1,8 +1,11 @@
 <template>
-  <div class="mt-3 p-3 border rounded w-100" style="background-color: #f8f9fa;">
-    <h6 class="mb-3 text-center text-md-start">
-      Modificar usuario para <strong>{{ profesor.nombre }}</strong>
+  <div class="formulario-container">
+    <h6 class="titulo-centrado">
+      Modificar usuario para:
     </h6>
+    <p class="titulo-centrado fw-bold ">
+      {{ profesor.nombre }}
+    </p>
 
     <div class="mb-2">
       <label class="form-label">Email</label>
@@ -76,4 +79,17 @@ function enviar() {
 </script>
 
 
+<style scoped>
+.formulario-container {
+  background-color: #f8f9fa;
+  width: 400px;
+  min-height: 430px;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
 
+.titulo-centrado {
+  text-align: center;
+}
+</style>

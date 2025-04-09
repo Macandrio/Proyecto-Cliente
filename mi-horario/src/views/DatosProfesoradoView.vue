@@ -79,10 +79,13 @@ function mostrarFormularioCrear({ profesorId, action: actionType }) {
     // Si ya está seleccionado el mismo profesor, cerrar el formulario
     profesorSeleccionado.value = null;
     action.value = '';
+    erroresFormulario.value = {}
   } else {
     // Si no está seleccionado, mostrar el formulario
     profesorSeleccionado.value = profesorId;
     action.value = actionType;
+    erroresFormulario.value = {}
+
   }
 }
 
@@ -265,7 +268,7 @@ async function modificarUsuario(datosFormulario) {
 
   try {
     const response = await axios.put(
-      `http://localhost:8081/api/usuarios/${idUsuario}`, // Cambiado a idUsuario en la URL
+      `http://localhost:8081/api/usuarios/${idUsuario}`,
       payload,
       {
         headers: {
@@ -277,10 +280,10 @@ async function modificarUsuario(datosFormulario) {
 
     console.log("Respuesta del servidor:", response);
     mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success');
-    profesorSeleccionado.value = null;  // Puedes cambiar esto a 'usuarioSeleccionado' si corresponde
-    obtenerTodosLosProfesores();  // O cambiar a 'obtenerTodosLosUsuarios' si aplica
-
+    profesorSeleccionado.value = null;
+    obtenerTodosLosProfesores();
   } catch (error) {
+    
     // Manejo de errores
     if (error.response) {
       console.error('Error en la respuesta del servidor:', error.response);
@@ -350,6 +353,7 @@ async function modificarUsuario(datosFormulario) {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
 
 .scrollable-profesores::-webkit-scrollbar {
   display: none;
