@@ -1,51 +1,46 @@
 <template>
   <MenuLateral />
 
-
   <div class="main-content mt-5 pt-4 px-3">
     <div class="mb-4 d-flex justify-content-center">
       <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
     </div>
 
+    <!-- Contenedor centrado con formulario flotante -->
+    <div class="main-wrapper d-flex justify-content-center align-items-start w-100 position-relative">
 
-
-    <div class="d-flex justify-content-between">
       <!-- Lista de Profesores -->
-      <div class="container-fluid d-flex justify-content-center">
-        <!-- Lista de Profesores -->
-        <div class="profesores-lista" style="flex: 1; margin-right: 20px;">
-          <div class="scrollable-profesores d-flex flex-column align-items-center">
-            <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
-              :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
-              :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
-              @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario"
-              @eliminarUsuario="eliminarUsuario" @modificarUsuario="modificarUsuario" />
-
-          </div>
-        </div>
-
-        <!-- Formulario -->
-        <div class="formulario-container d-flex justify-content-center"
-          :style="{ display: profesorSeleccionado ? 'block' : 'none' }">
-          <div class="formulario-content">
-            <FormularioCrearUsuario v-if="profesorSeleccionado && action === 'create'"
-              :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
-              :isLoading="isLoading" @guardar="guardarUsuario" />
-            <FormularioEditarUsuario v-if="profesorSeleccionado && action === 'edit'"
-              :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
-              :isLoading="isLoading" @actualizar="modificarUsuario"/>
-          </div>
+      <div class="profesores-lista">
+        <div class="scrollable-profesores d-flex flex-column align-items-center me-3">
+          <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
+            :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
+            :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
+            @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario" @eliminarUsuario="eliminarUsuario"
+            @modificarUsuario="modificarUsuario" :class="{
+              'espacio-formulario-movil': profesorSeleccionado && isMobile
+            }" />
         </div>
       </div>
     </div>
 
+    <!-- Formulario flotante -->
+    <div class="formulario-flotante" v-if="profesorSeleccionado">
+      <div class="formulario-content">
+        <FormularioCrearUsuario v-if="profesorSeleccionado && action === 'create'"
+          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
+          :isLoading="isLoading" @guardar="guardarUsuario" />
+        <FormularioEditarUsuario v-if="profesorSeleccionado && action === 'edit'"
+          :profesor="resultados.find(p => p.idProfesor === profesorSeleccionado)" :errores="erroresFormulario"
+          :isLoading="isLoading" @actualizar="modificarUsuario" />
+      </div>
+    </div>
 
   </div>
-
 
   <ModalMensaje :visible="modal.visible" :titulo="modal.titulo" :mensaje="modal.mensaje" :tipo="modal.tipo"
     @cerrar="cerrarModal" />
 </template>
+
 
 
 <script setup>
@@ -67,27 +62,32 @@ const isLoading = ref(false)
 const erroresFormulario = ref({})
 const action = ref('')  // Asegúrate de que action sea un ref
 
+
 // Al entrar en la pagina automaticamente
 onMounted(() => {
   obtenerTodosLosProfesores()
 })
 
 
-// Mostrar formulario de creación o edición
 function mostrarFormularioCrear({ profesorId, action: actionType }) {
-  if (profesorSeleccionado.value === profesorId) {
-    // Si ya está seleccionado el mismo profesor, cerrar el formulario
-    profesorSeleccionado.value = null;
-    action.value = '';
-    erroresFormulario.value = {}
+  const anchoPantalla = window.innerWidth
+  if (anchoPantalla <= 768) {
+    // En móvil redirigimos
+    window.location.href = `/formulario/${profesorId}?action=${actionType}`
   } else {
-    // Si no está seleccionado, mostrar el formulario
-    profesorSeleccionado.value = profesorId;
-    action.value = actionType;
-    erroresFormulario.value = {}
-
+    // En escritorio mostramos el formulario flotante
+    if (profesorSeleccionado.value === profesorId) {
+      profesorSeleccionado.value = null
+      action.value = ''
+      erroresFormulario.value = {}
+    } else {
+      profesorSeleccionado.value = profesorId
+      action.value = actionType
+      erroresFormulario.value = {}
+    }
   }
 }
+
 
 // Modal genérico
 const modal = ref({
@@ -283,7 +283,7 @@ async function modificarUsuario(datosFormulario) {
     profesorSeleccionado.value = null;
     obtenerTodosLosProfesores();
   } catch (error) {
-    
+
     // Manejo de errores
     if (error.response) {
       console.error('Error en la respuesta del servidor:', error.response);
@@ -292,7 +292,7 @@ async function modificarUsuario(datosFormulario) {
       if (error.response.status === 400 && error.response.data) {
         console.log("Errores de validación:", error.response.data);
         erroresFormulario.value = error.response.data; // Mostrar solo errores de validación
-        
+
       } else {
         // Si es otro tipo de error
         mostrarModal('❌ Error', 'El usuario ya existe o hay otro error.', 'error');
@@ -404,5 +404,22 @@ async function modificarUsuario(datosFormulario) {
 .slide-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+.main-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  /* opcional, si querés quitar el límite */
+}
+
+
+/* Formulario flotante */
+.formulario-flotante {
+  position: absolute;
+  top: 180px;
+  right: 100px;
+  width: 400px;
+  z-index: 10;
 }
 </style>

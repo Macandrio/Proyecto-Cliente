@@ -40,7 +40,10 @@
 
 
 
-      <button class="btn btn-primary w-100 mb-2">Ausencia</button>
+      <router-link to="/mis-ausencias" class="btn btn-primary w-100 mb-2" @click="cerrarOffcanvas">
+        Ausencia
+      </router-link>
+
     </div>
   </div>
 </template>
@@ -137,6 +140,7 @@ onMounted(() => {
       cerrarOffcanvas()
     })
   }, 100)
+  
 })
 
 
