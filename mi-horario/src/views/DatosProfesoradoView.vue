@@ -1,7 +1,7 @@
 <template>
   <MenuLateral />
 
-  <div class="main-content mt-5 pt-4 px-3">
+  <div class=" mt-5 pt-4 px-3">
     <div class="mb-4 d-flex justify-content-center">
       <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
     </div>
@@ -10,13 +10,13 @@
     <div class="main-wrapper d-flex justify-content-center align-items-start w-100 position-relative">
 
       <!-- Lista de Profesores -->
-      <div class="profesores-lista">
+      <div>
         <div class="scrollable-profesores d-flex flex-column align-items-center me-3">
           <TarjetaProfesor v-for="profesor in resultados" :key="profesor.idProfesor" :profesor="profesor"
             :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
             :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
             @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario" @eliminarUsuario="eliminarUsuario"
-            @modificarUsuario="modificarUsuario" :class="{
+            @imagenSubida="obtenerTodosLosProfesores" @modificarUsuario="modificarUsuario" :class="{
               'espacio-formulario-movil': profesorSeleccionado && isMobile
             }" />
         </div>
@@ -344,20 +344,15 @@ async function modificarUsuario(datosFormulario) {
 
 /* Scroll tarjetas */
 .scrollable-profesores {
-  max-height: calc(100vh - 200px);
-  overflow-y: scroll;
+  max-height: 66vh;
+  overflow-y: auto;
   width: 100%;
-  padding-right: 10px;
-
-  /* Ocultar scroll en la mayoría de navegadores */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
-
-.scrollable-profesores::-webkit-scrollbar {
+/* Para la barra vertical */
+/* .scrollable-profesores::-webkit-scrollbar {
   display: none;
-}
+} */
 
 /* Modal */
 .modal-overlay {

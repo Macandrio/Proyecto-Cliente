@@ -5,9 +5,12 @@
     <!-- 📦 Agrupamos imagen + info -->
     <div class="contenedor-info d-flex flex-column flex-md-row align-items-start">
       <!-- Imagen -->
+      <input type="file" accept="image/*" ref="inputArchivo" @change="subirImagenProfesor" style="display: none;" />
+
       <img
-        :src="profesor.imagen || 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'"
-        alt="Foto del profesor" class="img-fluid rounded" style="height: 100px; width: 100px; object-fit: cover;" />
+        :src="imagenProfesor || 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'"
+        alt="Foto del profesor" class="img-fluid rounded"
+        style="height: 100px; width: 100px; object-fit: cover; cursor: pointer;" @click="abrirInput" />
 
       <!-- Info -->
       <div class="flex-grow-1 ms-md-3 mt-0 mt-md-0 text-center text-md-start">
@@ -43,9 +46,15 @@
 
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '../stores/auth'
 
-defineProps({
+const auth = useAuthStore()
+const imagenProfesor = ref(null)
+const inputArchivo = ref(null)
+
+const props = defineProps({
   profesor: Object,
   profesorSeleccionado: Number,
   formulario: Object,
@@ -54,21 +63,88 @@ defineProps({
 })
 
 const emit = defineEmits([
-  'toggleFormulario',  // Para abrir o cerrar el formulario
-  'guardarUsuario',    // Para guardar el usuario
-  'cancelarFormulario',// Para cancelar la acción
-  'eliminarUsuario',   // Para eliminar el usuario
-  'modificarUsuario'   // Para modificar el usuario
+  'toggleFormulario',
+  'guardarUsuario',
+  'cancelarFormulario',
+  'eliminarUsuario',
+  'modificarUsuario',
+  'imagenSubida' // ✅ Evento para recargar profesores en el padre
 ])
 
-// Manejo del clic en los botones "Crear" o "Modificar" usuario
-function handleToggleFormulario(profesorId, action) {
-  // Emitimos el evento con el objeto { profesorId, action }
-  emit('toggleFormulario', { profesorId, action })  // Aquí usamos `emit` de `defineEmits`
-  erroresFormulario.value = {}
+onMounted(() => {
+  cargarImagenProfesor()
+})
+
+watch(() => props.profesor?.usuario?.id, () => {
+  cargarImagenProfesor()
+})
+
+// 👉 Función que carga la imagen actual del profesor
+async function cargarImagenProfesor() {
+  try {
+    if (!props.profesor?.usuario?.id) return
+
+    const response = await axios.get(
+      `http://localhost:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        },
+        responseType: 'arraybuffer'
+      }
+    )
+
+    const tipo = response.headers['content-type'] || 'image/jpeg'
+    const base64 = btoa(
+      new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+    )
+    imagenProfesor.value = `data:${tipo};base64,${base64}`
+  } catch (error) {
+    console.warn(`Imagen no encontrada para usuario ${props.profesor.usuario.id}`)
+    imagenProfesor.value = null
+  }
 }
 
+
+// 👉 Abre el input al hacer clic sobre la imagen
+function abrirInput() {
+  inputArchivo.value?.click()
+}
+
+// 👉 Sube una nueva imagen y notifica al padre
+async function subirImagenProfesor(event) {
+  const archivo = event.target.files[0]
+  if (!archivo || !props.profesor?.usuario?.id) return
+
+  const formData = new FormData()
+  formData.append('imagen', archivo)
+
+  try {
+    await axios.post(
+      `http://localhost:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        }
+      }
+    )
+    alert('✅ Imagen actualizada')
+    cargarImagenProfesor()
+    emit('imagenSubida') // ✅ Dispara recarga en el padre
+
+  } catch (error) {
+    console.error('❌ Error al subir imagen del profesor:', error)
+    alert('Error al subir imagen')
+  }
+}
+
+// 👉 Manejador para abrir/cerrar el formulario
+function handleToggleFormulario(profesorId, action) {
+  emit('toggleFormulario', { profesorId, action })
+}
 </script>
+
 
 <style scoped>
 .tarjeta-horizontal {

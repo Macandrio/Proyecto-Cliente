@@ -53,20 +53,7 @@ async function login() {
 }
 </script>
 
-<style>
-html, body, #app {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+<style scoped>
 
 .bg-gradient {
   width: 100%;
@@ -75,10 +62,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 300px;
 }
 
 .login-wrapper {
-  max-width: 400px;
+  max-width: 500px;
   width: 100%;
   padding: 0 16px; /* margen lateral para que no toque los bordes */
 }

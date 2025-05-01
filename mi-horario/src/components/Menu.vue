@@ -27,20 +27,24 @@
 
           <!-- DROPDOWN DE PERFIL -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="perfilDropdown" role="button" aria-expanded="false">
-              👤 {{ auth.usuario.nombre }}
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <!-- Si hay imagen de perfil -->
+              <img v-if="imagenPerfil" :src="imagenPerfil" class="rounded-circle me-2"
+                style="width: 32px; height: 32px; object-fit: cover;" />
+
+
+
+              {{ auth.usuario.nombre }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
               <li>
-                Registrar Usuario
+                <label for="inputFotoPerfil" class="dropdown-item" style="cursor: pointer;">
+                  👤 Subir foto de Perfil
+                </label>
+                <input id="inputFotoPerfil" type="file" accept="image/*" @change="subirImagen" style="display: none;" />
               </li>
-              <li>
-                Modificar Usuario
-              </li>
-              <li>
-                🔐 Cambiar contraseña
-              </li>
-
+              <li>🔐 Cambiar contraseña</li>
               <li>
                 <hr class="dropdown-divider" />
               </li>
@@ -51,6 +55,8 @@
               </li>
             </ul>
           </li>
+
+
         </ul>
       </div>
     </div>
@@ -58,9 +64,14 @@
 </template>
 
 <script setup>
+import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import logo from '../assets/logo_iespsur.jpeg'
+import { ref,onMounted } from 'vue'
+
+const imagenPerfil = ref(null)
+
 
 
 const router = useRouter()
@@ -68,10 +79,64 @@ const auth = useAuthStore()
 
 const nombreUsuario = auth.username || 'Usuario'
 
+onMounted(() => {
+  cargarImagenConToken()
+})
+
+
 function logout() {
   auth.logout()
   router.push('/login')
 }
+
+function subirImagen(event) {
+  const archivo = event.target.files[0]
+  if (!archivo) return
+
+  const formData = new FormData()
+  formData.append('imagen', archivo)
+
+  axios.post(
+    `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      }
+    }
+  ).then(() => {
+    alert('Imagen subida con éxito')
+    cargarImagenConToken() // ✅ refresca imagen
+  }).catch(err => {
+    console.error(err)
+    alert('Error al subir la imagen')
+  })
+}
+
+
+
+async function cargarImagenConToken() {
+  try {
+    const response = await axios.get(
+      `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+      {
+        headers: {
+          Authorization: `Bearer ${auth.token}`
+        },
+        responseType: 'arraybuffer'
+      }
+    )
+
+    const tipo = response.headers['content-type'] || 'image/jpeg'
+    const base64 = btoa(
+      new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
+    )
+    imagenPerfil.value = `data:${tipo};base64,${base64}`
+  } catch (error) {
+    console.error('Error cargando imagen:', error)
+  }
+}
+
 </script>
 
 
@@ -92,11 +157,11 @@ function logout() {
 /* Centrar el dropdown en móviles */
 .dropdown-menu {
   transition: all 0.2s ease-in-out;
-  left: 0 !important;
+  left: 100px !important;
   right: 0 !important;
   margin: auto;
   width: auto;
-  max-width: 250px;
+  max-width: 300px;
   /* opcional: máximo en móvil */
 }
 
