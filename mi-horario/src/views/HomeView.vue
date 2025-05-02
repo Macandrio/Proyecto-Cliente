@@ -1,6 +1,6 @@
 <template>
-    <MenuLateral />
-    <ModalCambioContraseña :visible="mostrarModal" @cerrar="mostrarModal = false" />
+  <MenuLateral />
+  <ModalCambioContraseña :visible="mostrarModal" @cerrar="mostrarModal = false" />
     <Horario />
 </template>
 
@@ -24,4 +24,3 @@ onMounted(() => {
 })
 
 </script>
-

@@ -2,10 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
 import HomeView from '../views/HomeView.vue'
 import PerfilView from '../views/PerfilView.vue'
-import DatosProfesoradoView from '../views/DatosProfesoradoView.vue'
-import DatosProfesor from '../views/DatosProfesor.vue'
+import datosprofesoradoView from '../views/DatosProfesoradoView.vue'
+import datosprofesor from '../views/DatosProfesor.vue'
 import FormularioUsuarioView from '../views/FormularioUsuarioView.vue'
 import AusenciasProfesorView from '../views/AusenciasProfesorView.vue'
+import DatosUsuarioView from '../views/DatosUsuarioView.vue'
 
 
 
@@ -15,10 +16,11 @@ const routes = [
   { path: '/login', component: LoginView },
   { path: '/home', component: HomeView },
   { path: '/perfil', component: PerfilView },
-  { path: '/datos-profesorado', component: DatosProfesoradoView },
-  { path: '/profesor/:id', component: DatosProfesor },
+  { path: '/datos-profesorado', component: datosprofesoradoView },
+  { path: '/profesor/:id', component: datosprofesor },
   { path: '/formulario/:id', component: FormularioUsuarioView },
   { path: '/mis-ausencias', component: AusenciasProfesorView },
+  { path: '/datosusuario/:id', component: DatosUsuarioView },
 ]
 
 const router = createRouter({

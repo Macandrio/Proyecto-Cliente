@@ -1,6 +1,9 @@
 <template>
   <div
-    class="card tarjeta-horizontal d-flex flex-column flex-md-row align-items-center justify-content-between p-3 shadow-sm mb-3">
+    class="card tarjeta-horizontal d-flex flex-column flex-md-row align-items-center justify-content-between p-3 shadow-sm mb-3"
+    @click="emit('verDetalles', profesor.idProfesor)" style="cursor: pointer;">
+
+
 
     <!-- 📦 Agrupamos imagen + info -->
     <div class="contenedor-info d-flex flex-column flex-md-row align-items-start">
@@ -9,8 +12,7 @@
 
       <img
         :src="imagenProfesor || 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'"
-        alt="Foto del profesor" class="img-fluid rounded"
-        style="height: 100px; width: 100px; object-fit: cover; cursor: pointer;" @click="abrirInput" />
+        alt="Foto del profesor" class="img-fluid rounded" style="height: 100px; width: 100px; object-fit: cover;" />
 
       <!-- Info -->
       <div class="flex-grow-1 ms-md-3 mt-0 mt-md-0 text-center text-md-start">
@@ -68,7 +70,7 @@ const emit = defineEmits([
   'cancelarFormulario',
   'eliminarUsuario',
   'modificarUsuario',
-  'imagenSubida' // ✅ Evento para recargar profesores en el padre
+  'verDetalles'
 ])
 
 onMounted(() => {
@@ -81,16 +83,23 @@ watch(() => props.profesor?.usuario?.id, () => {
 
 // 👉 Función que carga la imagen actual del profesor
 async function cargarImagenProfesor() {
-  try {
-    if (!props.profesor?.usuario?.id) return
+  const id = props.profesor?.usuario?.id
+  const tieneImagen = props.profesor?.usuario?.imagen // 💡 Solo cargamos si tiene imagen
 
+  if (!id || !tieneImagen) {
+    imagenProfesor.value = null
+    return
+  }
+
+  try {
     const response = await axios.get(
-      `http://localhost:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
+      `http://localhost:8081/api/usuarios/${id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
         },
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
+        validateStatus: status => status === 200
       }
     )
 
@@ -99,11 +108,15 @@ async function cargarImagenProfesor() {
       new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '')
     )
     imagenProfesor.value = `data:${tipo};base64,${base64}`
-  } catch (error) {
-    console.warn(`Imagen no encontrada para usuario ${props.profesor.usuario.id}`)
+  } catch {
     imagenProfesor.value = null
   }
 }
+
+
+
+
+
 
 
 // 👉 Abre el input al hacer clic sobre la imagen

@@ -16,7 +16,8 @@
             :profesorSeleccionado="profesorSeleccionado" :formulario="formularios[profesor.idProfesor] || {}"
             :errores="erroresFormulario" :isLoading="isLoading" @toggleFormulario="mostrarFormularioCrear"
             @guardarUsuario="guardarUsuario" @cancelarFormulario="cancelarFormulario" @eliminarUsuario="eliminarUsuario"
-            @imagenSubida="obtenerTodosLosProfesores" @modificarUsuario="modificarUsuario" :class="{
+            @imagenSubida="obtenerTodosLosProfesores" @modificarUsuario="modificarUsuario"
+            @verDetalles="irADetallesUsuario" :class="{
               'espacio-formulario-movil': profesorSeleccionado && isMobile
             }" />
         </div>
@@ -50,6 +51,8 @@ import TarjetaProfesor from '../components/TarjetaProfesor.vue'
 import ModalMensaje from '../components/ModalMensaje.vue'
 import FormularioEditarUsuario from '../components/FormularioEditarUsuario.vue'
 import FormularioCrearUsuario from '../components/FormularioCrearUsuario.vue'
+import { useRouter } from 'vue-router'
+
 
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -61,6 +64,8 @@ const formularios = ref({})
 const isLoading = ref(false)
 const erroresFormulario = ref({})
 const action = ref('')  // Asegúrate de que action sea un ref
+const router = useRouter()
+
 
 
 // Al entrar en la pagina automaticamente
@@ -306,6 +311,11 @@ async function modificarUsuario(datosFormulario) {
     isLoading.value = false;
   }
 
+}
+
+
+function irADetallesUsuario(idProfesor) {
+  router.push(`/datosusuario/${idProfesor}`)
 }
 
 

@@ -1,7 +1,5 @@
 <template>
   <div class="container-fluid pt-5 mb-5" style="margin-top: 100px;">
-    <h2 class="mb-4 text-center">Mi Horario</h2>
-
     <!-- Vista de escritorio -->
     <div class="d-none d-md-block">
       <table class="table table-bordered text-start align-middle w-100">
@@ -20,6 +18,7 @@
               :class="{ 'bg-light': getClase(dia, franja) }">
               <div v-if="getClase(dia, franja)">
                 Aula: {{ getClase(dia, franja).aula?.codigo || '-' }}<br />
+                Curso: {{ getClase(dia, franja).curso?.nombre || '-' }}<br />
                 Asig: {{ getClase(dia, franja).asignatura?.nombre || '-' }}
               </div>
             </td>
@@ -52,6 +51,7 @@
               :class="{ 'bg-light': getClase(diasSemana[diaActualIndex], franja) }">
               <div v-if="getClase(diasSemana[diaActualIndex], franja)">
                 Aula: {{ getClase(diasSemana[diaActualIndex], franja).aula?.codigo || '-' }}<br />
+                Curso: {{ getClase(diasSemana[diaActualIndex], franja).curso?.nombre || '-' }}<br />
                 Asig: {{ getClase(diasSemana[diaActualIndex], franja).asignatura?.nombre || '-' }}
               </div>
               <div v-else>-</div>
@@ -66,11 +66,15 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 
 const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
 const diaActualIndex = ref(0)
 const horario = ref([])
+const route = useRoute()
+const idProfesor = route.params.id || null
+
 
 const franjasOrdenadas = computed(() => {
   const mapa = new Map()
@@ -101,7 +105,6 @@ function diaSiguiente() {
 
 onMounted(async () => {
   try {
-    const idProfesor = null
     const url = idProfesor
       ? `http://localhost:8081/api/horarios?idProfesor=${idProfesor}`
       : 'http://localhost:8081/api/horarios'
