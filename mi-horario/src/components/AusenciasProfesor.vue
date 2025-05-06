@@ -12,6 +12,12 @@
         <div class="card">
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <span>{{ formatFecha(ausenciaDia.fecha) }}</span>
+            <button class="btn btn-sm btn-success me-2" @click="justificarAusenciasDia(ausenciaDia.fecha)"
+              :disabled="todasJustificadas(ausenciaDia.lstAusenciaFecha)">
+              {{ todasJustificadas(ausenciaDia.lstAusenciaFecha) ? 'Ya justificadas' : 'Justificar día' }}
+            </button>
+
+
             <button class="btn btn-sm btn-danger" @click="eliminarAusencia({ fecha: ausenciaDia.fecha })">
               Eliminar
             </button>
@@ -55,13 +61,8 @@
       </div>
     </div>
   </div>
-  <ModalMensaje
-  :visible="modal.visible"
-  :titulo="modal.titulo"
-  :mensaje="modal.mensaje"
-  :tipo="modal.tipo"
-  @cerrar="modal.visible = false"
-/>
+  <ModalMensaje :visible="modal.visible" :titulo="modal.titulo" :mensaje="modal.mensaje" :tipo="modal.tipo"
+    @cerrar="modal.visible = false" />
 
 </template>
 
@@ -148,6 +149,35 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
     console.error('Error al eliminar ausencia:', error)
     mostrarModal('Error al eliminar', 'No se pudo eliminar la ausencia.', 'error')
   }
+}
+
+async function justificarAusenciasDia(fecha) {
+  if (!confirm(`¿Justificar todas las ausencias del día ${formatFecha(fecha)}?`)) return
+  const payload = {fecha: new Date(fecha).toISOString().split('T')[0],
+                    idProfesor: idProfesor}
+  console.log(payload)
+
+  try {
+    await axios.patch(
+  'http://localhost:8081/api/ausencias/justificar-dia',
+  payload,
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  }
+)
+
+    await cargarAusencias()
+    mostrarModal('Ausencias justificadas', 'Se justificaron correctamente.', 'success')
+  } catch (error) {
+    console.error('Error al justificar ausencias:', error)
+    mostrarModal('Error al justificar', 'No se pudieron justificar.', 'error')
+  }
+}
+
+function todasJustificadas(ausenciasDelDia) {
+  return ausenciasDelDia.every(a => a.justificada)
 }
 
 

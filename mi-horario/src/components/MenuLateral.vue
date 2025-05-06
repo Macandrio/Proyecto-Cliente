@@ -46,6 +46,15 @@
 
     </div>
   </div>
+
+  <modalmensaje
+  :visible="modalVisible"
+  :titulo="modalTitulo"
+  :mensaje="modalMensaje"
+  :tipo="modalTipo"
+  @cerrar="cerrarModal"
+/>
+
 </template>
 
 <script setup>
@@ -53,7 +62,14 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import modalmensaje from '../components/ModalMensaje.vue'
 
+
+// Estado del modal
+const modalVisible = ref(false)
+const modalTitulo = ref('')
+const modalMensaje = ref('')
+const modalTipo = ref('info')
 
 const auth = useAuthStore()
 const fileInput = ref(null)
@@ -61,6 +77,21 @@ const cargando = ref(false)
 const router = useRouter()
 
 
+onMounted(() => {
+  // Mostrar modal tras recarga si corresponde
+  if (localStorage.getItem('mostrarModalImportacion') === '1') {
+    mostrarModal('Importación exitosa', 'Archivo importado correctamente.', 'success')
+    localStorage.removeItem('mostrarModalImportacion')
+  }
+
+  // Cerrar offcanvas por si quedó abierto
+  setTimeout(() => {
+    cerrarOffcanvas()
+    router.afterEach(() => {
+      cerrarOffcanvas()
+    })
+  }, 100)
+})
 
 function abrirArchivoSelec() {
   fileInput.value.value = ''
@@ -78,16 +109,22 @@ function subirArchivoSelec(event) {
     cargando.value = true
 
     try {
-      await axios.post('http://localhost:8081/api/horarios/importacion', { file: base64File }, {
+      const response = await axios.post('http://localhost:8081/api/horarios/importacion', { file: base64File }, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       })
-      alert('Archivo importado correctamente.')
+
+      console.log('Respuesta del backend:', response.data)
+
+      // Marca para mostrar el modal después de recargar
+      localStorage.setItem('mostrarModalImportacion', '1')
+      location.reload()
+
     } catch (error) {
-      console.error('Error al subir archivo:', error)
-      alert('Error al importar el archivo.')
+      console.error('Error al importar el archivo:', error)
+      mostrarModal('Error', 'Error al importar el archivo.', 'error')
     } finally {
       cargando.value = false
     }
@@ -95,6 +132,7 @@ function subirArchivoSelec(event) {
 
   reader.readAsDataURL(file)
 }
+
 
 
 
@@ -142,6 +180,18 @@ onMounted(() => {
   }, 100)
   
 })
+
+
+function mostrarModal(titulo, mensaje, tipo = 'info') {
+  modalTitulo.value = titulo
+  modalMensaje.value = mensaje
+  modalTipo.value = tipo
+  modalVisible.value = true
+}
+
+function cerrarModal() {
+  modalVisible.value = false
+}
 
 
 </script>

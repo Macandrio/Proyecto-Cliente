@@ -1,7 +1,9 @@
 <template>
   <MenuLateral />
   <ModalCambioContraseña :visible="mostrarModal" @cerrar="mostrarModal = false" />
+  <div class="mx-4 mt-4"> <!-- Margen lateral y superior -->
     <Horario />
+  </div>
 </template>
 
 
