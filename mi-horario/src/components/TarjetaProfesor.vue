@@ -25,23 +25,7 @@
       </div>
     </div>
 
-    <!-- Botones -->
-    <div class="botones-profesor d-flex flex-column flex-md-column align-items-center align-items-md-end mt-3 mt-md-0">
-      <template v-if="profesor.usuario">
-        <button class="btn btn-warning w-100 " @click="handleToggleFormulario(profesor.idProfesor, 'edit')">
-          {{ profesorSeleccionado === profesor.idProfesor ? 'Cerrar formulario' : 'Modificar usuario' }}
-        </button>
-        <button class="btn btn-danger w-100" @click="$emit('eliminarUsuario', profesor)">
-          Eliminar usuario
-        </button>
-      </template>
-
-      <template v-else>
-        <button class="btn btn-success w-100" @click="handleToggleFormulario(profesor.idProfesor, 'create')">
-          {{ profesorSeleccionado === profesor.idProfesor ? 'Cerrar formulario' : 'Crear usuario' }}
-        </button>
-      </template>
-    </div>
+    
 
   </div>
 </template>
@@ -93,7 +77,7 @@ async function cargarImagenProfesor() {
 
   try {
     const response = await axios.get(
-      `http://localhost:8081/api/usuarios/${id}/imagen`,
+      `http://52.72.185.156:8081/api/usuarios/${id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
@@ -134,7 +118,7 @@ async function subirImagenProfesor(event) {
 
   try {
     await axios.post(
-      `http://localhost:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
+      `http://52.72.185.156:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
       formData,
       {
         headers: {

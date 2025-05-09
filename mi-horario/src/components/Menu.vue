@@ -30,8 +30,9 @@
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button"
               data-bs-toggle="dropdown" aria-expanded="false">
               <!-- Si hay imagen de perfil -->
-              <img v-if="imagenPerfil" :src="imagenPerfil" class="rounded-circle me-2"
+              <img :src="imagenPerfil || imagenPorDefecto" class="rounded-circle me-2"
                 style="width: 32px; height: 32px; object-fit: cover;" />
+
 
 
 
@@ -68,7 +69,7 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import logo from '../assets/logo_iespsur.jpeg'
-import { ref,onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const imagenPerfil = ref(null)
 
@@ -97,7 +98,7 @@ function subirImagen(event) {
   formData.append('imagen', archivo)
 
   axios.post(
-    `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+    `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
     formData,
     {
       headers: {
@@ -113,17 +114,19 @@ function subirImagen(event) {
   })
 }
 
+const imagenPorDefecto = 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'
 
 
 async function cargarImagenConToken() {
   try {
     const response = await axios.get(
-      `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
         },
-        responseType: 'arraybuffer'
+        responseType: 'arraybuffer',
+        validateStatus: status => status === 200 // solo acepta 200 como válido
       }
     )
 
@@ -133,9 +136,11 @@ async function cargarImagenConToken() {
     )
     imagenPerfil.value = `data:${tipo};base64,${base64}`
   } catch (error) {
-    console.error('Error cargando imagen:', error)
+    console.warn('No se encontró imagen. Usando imagen por defecto.')
+    imagenPerfil.value = imagenPorDefecto
   }
 }
+
 
 </script>
 
