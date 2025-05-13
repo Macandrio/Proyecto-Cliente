@@ -77,7 +77,7 @@ async function cargarImagenProfesor() {
 
   try {
     const response = await axios.get(
-      `http://52.72.185.156:8081/api/usuarios/${id}/imagen`,
+      `http://localhost:8081/api/usuarios/${id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
@@ -118,7 +118,7 @@ async function subirImagenProfesor(event) {
 
   try {
     await axios.post(
-      `http://52.72.185.156:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
+      `http://localhost:8081/api/usuarios/${props.profesor.usuario.id}/imagen`,
       formData,
       {
         headers: {

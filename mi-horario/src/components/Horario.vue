@@ -106,8 +106,8 @@ function diaSiguiente() {
 onMounted(async () => {
   try {
     const url = idProfesor
-      ? `http://52.72.185.156:8081/api/horarios?idProfesor=${idProfesor}`
-      : 'http://52.72.185.156:8081/api/horarios'
+      ? `http://localhost:8081/api/horarios?idProfesor=${idProfesor}`
+      : 'http://localhost:8081/api/horarios'
 
     const response = await axios.get(url, {
       headers: {

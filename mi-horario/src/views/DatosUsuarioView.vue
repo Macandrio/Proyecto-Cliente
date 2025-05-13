@@ -101,7 +101,7 @@ function mostrarFormulario(tipo) {
 
 async function obtenerDatosProfesor() {
     try {
-        const response = await axios.get(`http://52.72.185.156:8081/api/profesores/${idProfesor}`, {
+        const response = await axios.get(`http://localhost:8081/api/profesores/${idProfesor}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         profesor.value = response.data
@@ -116,7 +116,7 @@ async function cargarImagen() {
         const idUsuario = profesor.value?.usuario?.id
         if (!idUsuario || !profesor.value.usuario.imagen) return
 
-        const response = await axios.get(`http://52.72.185.156:8081/api/usuarios/${idUsuario}/imagen`, {
+        const response = await axios.get(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             responseType: 'arraybuffer',
             validateStatus: status => status === 200
@@ -145,7 +145,7 @@ async function subirImagen(event) {
     formData.append('imagen', archivo)
 
     try {
-        await axios.post(`http://52.72.185.156:8081/api/usuarios/${idUsuario}/imagen`, formData, {
+        await axios.post(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, formData, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         mostrarModal('✅ Imagen actualizada', 'La imagen de perfil se actualizó correctamente.', 'success')
@@ -171,7 +171,7 @@ async function guardarUsuario(datosFormulario) {
     isLoading.value = true
 
     try {
-        await axios.post(`http://52.72.185.156:8081/api/usuarios/crear-con-profesor/${idProfesor}`, payload, {
+        await axios.post(`http://localhost:8081/api/usuarios/crear-con-profesor/${idProfesor}`, payload, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
@@ -202,7 +202,7 @@ async function modificarUsuario(datosFormulario) {
     isLoading.value = true
 
     try {
-        await axios.put(`http://52.72.185.156:8081/api/usuarios/${idUsuario}`, payload, {
+        await axios.put(`http://localhost:8081/api/usuarios/${idUsuario}`, payload, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
@@ -234,7 +234,7 @@ async function eliminarUsuario() {
     isLoading.value = true
 
     try {
-        await axios.delete(`http://52.72.185.156:8081/api/usuarios/${usuario.id}`, {
+        await axios.delete(`http://localhost:8081/api/usuarios/${usuario.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         mostrarModal('✅ Usuario eliminado', `El usuario de ${nombre} ha sido eliminado.`, 'success')

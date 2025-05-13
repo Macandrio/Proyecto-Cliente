@@ -88,7 +88,7 @@
   onMounted(async () => {
     const id = route.params.id
     try {
-      const response = await axios.get(`http://52.72.185.156:8081/api/profesores/${id}`, {
+      const response = await axios.get(`http://localhost:8081/api/profesores/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

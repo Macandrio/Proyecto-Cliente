@@ -98,7 +98,7 @@ function subirImagen(event) {
   formData.append('imagen', archivo)
 
   axios.post(
-    `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
+    `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
     formData,
     {
       headers: {
@@ -120,7 +120,7 @@ const imagenPorDefecto = 'https://img.freepik.com/vector-premium/icono-usuario-a
 async function cargarImagenConToken() {
   try {
     const response = await axios.get(
-      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
+      `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
