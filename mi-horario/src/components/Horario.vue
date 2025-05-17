@@ -14,8 +14,7 @@
             <td class="bg-light fw-bold" style="padding-left: 8px;">
               {{ franja.horaInicio }} - {{ franja.horaFin }}
             </td>
-            <td v-for="dia in diasSemana" :key="dia" style="height: 80px; padding-left: 8px;"
-              :class="{ 'bg-light': getClase(dia, franja) }">
+            <td v-for="dia in diasSemana" :key="dia" style="height: 80px; padding-left: 8px;" :style="getClase(dia, franja) ? obtenerEstilosAsignatura(getClase(dia, franja)?.asignatura?.nombre) : {}">
               <div v-if="getClase(dia, franja)">
                 Aula: {{ getClase(dia, franja).aula?.codigo || '-' }}<br />
                 Curso: {{ getClase(dia, franja).curso?.nombre || '-' }}<br />
@@ -47,8 +46,9 @@
             <td class="bg-light fw-bold" style="padding-left: 8px;">
               {{ franja.horaInicio }} - {{ franja.horaFin }}
             </td>
-            <td style="height: 80px; padding-left: 8px;"
-              :class="{ 'bg-light': getClase(diasSemana[diaActualIndex], franja) }">
+            <td style="height: 80px; padding-left: 8px;" :style="getClase(diasSemana[diaActualIndex], franja)
+    ? obtenerEstilosAsignatura(getClase(diasSemana[diaActualIndex], franja)?.asignatura?.nombre)
+    : {}">
               <div v-if="getClase(diasSemana[diaActualIndex], franja)">
                 Aula: {{ getClase(diasSemana[diaActualIndex], franja).aula?.codigo || '-' }}<br />
                 Curso: {{ getClase(diasSemana[diaActualIndex], franja).curso?.nombre || '-' }}<br />
@@ -106,8 +106,8 @@ function diaSiguiente() {
 onMounted(async () => {
   try {
     const url = idProfesor
-      ? `http://localhost:8081/api/horarios?idProfesor=${idProfesor}`
-      : 'http://localhost:8081/api/horarios'
+      ? `http://52.72.185.156:8081/api/horarios?idProfesor=${idProfesor}`
+      : 'http://52.72.185.156:8081/api/horarios'
 
     const response = await axios.get(url, {
       headers: {
@@ -131,4 +131,60 @@ onMounted(async () => {
     console.error('Error al cargar el horario:', error)
   }
 })
+
+// Colores de las celdas
+
+const coloresAsignaturas = ref({})
+const paletaColoresSuaves = [
+  'rgba(255, 236, 179, 0.8)', 'rgba(200, 230, 201, 0.8)', 'rgba(187, 222, 251, 0.8)',
+  'rgba(248, 187, 208, 0.8)', 'rgba(209, 196, 233, 0.8)', 'rgba(178, 235, 242, 0.8)',
+  'rgba(255, 224, 178, 0.8)', 'rgba(220, 237, 200, 0.8)', 'rgba(240, 244, 195, 0.8)',
+  'rgba(225, 190, 231, 0.8)', 'rgba(255, 204, 188, 0.8)', 'rgba(197, 202, 233, 0.8)',
+  'rgba(179, 229, 252, 0.8)', 'rgba(215, 204, 200, 0.8)', 'rgba(245, 245, 220, 0.8)'
+]
+
+
+function obtenerEstilosAsignatura(asignatura) {
+  if (!asignatura) return {}
+
+  if (!coloresAsignaturas.value[asignatura]) {
+    const total = Object.keys(coloresAsignaturas.value).length
+    const baseColor = paletaColoresSuaves[total % paletaColoresSuaves.length]
+    coloresAsignaturas.value[asignatura] = baseColor
+  }
+
+  const bgColor = coloresAsignaturas.value[asignatura]
+  const borderColor = oscurecerColor(bgColor)
+
+  return {
+    backgroundColor: bgColor,
+    border: `2px solid ${borderColor}`
+  }
+}
+
+
+function oscurecerColor(hex, factor = 0.7) {
+  const rgb = hex.replace('#', '').match(/.{1,2}/g)
+  if (!rgb) return '#999'
+  const [r, g, b] = rgb.map(c => Math.max(0, Math.min(255, Math.floor(parseInt(c, 16) * factor))))
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 </script>
+
+
+<style scoped>
+table,
+table th,
+table td {
+  border: 1px dashed black !important;
+  border-collapse: separate !important;
+}
+
+/* Asegura que el borde no se colapse entre celdas */
+table {
+  border-spacing: 0;
+}
+
+
+</style>

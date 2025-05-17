@@ -15,9 +15,13 @@
       </router-link>
 
 
-      <router-link to="/perfil" class="btn btn-outline-light ms-auto d-lg-none fw-bold nombre-usuario">
-        👤 {{ auth.usuario.nombre }}
-      </router-link>
+      <div class="d-lg-none ms-auto d-flex align-items-center">
+  <router-link to="/perfil" class="btn btn-outline-light fw-bold nombre-usuario">
+    👤 {{ auth.usuario.nombre }}
+  </router-link>
+</div>
+
+
 
 
 
@@ -29,15 +33,17 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button"
               data-bs-toggle="dropdown" aria-expanded="false">
-              <!-- Si hay imagen de perfil -->
+
+              <!-- Imagen -->
               <img :src="imagenPerfil || imagenPorDefecto" class="rounded-circle me-2"
                 style="width: 32px; height: 32px; object-fit: cover;" />
 
-
-
-
-              {{ auth.usuario.nombre }}
+              <!-- Nombre: comienza siempre alineado a la izquierda -->
+              <span class="nombre-usuario" :title="auth.usuario.nombre">
+                {{ auth.usuario.nombre }}
+              </span>
             </a>
+
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
               <li>
                 <label for="inputFotoPerfil" class="dropdown-item" style="cursor: pointer;">
@@ -45,7 +51,8 @@
                 </label>
                 <input id="inputFotoPerfil" type="file" accept="image/*" @change="subirImagen" style="display: none;" />
               </li>
-              <li>🔐 Cambiar contraseña</li>
+              <label class="dropdown-item" href="#" @click.prevent="mostrarModalPassword = true">🔐 Cambiar
+                contraseña</label>
               <li>
                 <hr class="dropdown-divider" />
               </li>
@@ -62,6 +69,27 @@
       </div>
     </div>
   </nav>
+
+  <!-- Modal cambio de contraseña -->
+  <div v-if="mostrarModalPassword" class="modal-overlay">
+    <div class="modal-content modal-warning">
+      <h5 class="mb-3">🔐 Cambiar Contraseña</h5>
+
+      <div v-if="errorPassword" class="text-danger mb-2 text-start" style="font-size: 0.9rem;">
+        {{ errorPassword }}
+      </div>
+
+      <input v-model="nuevaPassword" type="password" class="form-control mb-3" placeholder="Nueva contraseña" />
+      <input v-model="confirmacionPassword" type="password" class="form-control mb-3"
+        placeholder="Confirmar contraseña" />
+
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-secondary" @click="mostrarModalPassword = false">Cancelar</button>
+        <button class="btn btn-primary" @click="cambiarPassword">Guardar</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
@@ -98,7 +126,7 @@ function subirImagen(event) {
   formData.append('imagen', archivo)
 
   axios.post(
-    `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+    `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
     formData,
     {
       headers: {
@@ -120,7 +148,7 @@ const imagenPorDefecto = 'https://img.freepik.com/vector-premium/icono-usuario-a
 async function cargarImagenConToken() {
   try {
     const response = await axios.get(
-      `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
+      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
@@ -141,6 +169,47 @@ async function cargarImagenConToken() {
   }
 }
 
+const mostrarModalPassword = ref(false)
+const nuevaPassword = ref('')
+const confirmacionPassword = ref('')
+const errorPassword = ref('')
+
+async function cambiarPassword() {
+  errorPassword.value = ''
+
+  if (!nuevaPassword.value || nuevaPassword.value.length < 6) {
+    errorPassword.value = 'La contraseña debe tener al menos 6 caracteres'
+    return
+  }
+
+  if (nuevaPassword.value !== confirmacionPassword.value) {
+    errorPassword.value = 'Las contraseñas no coinciden'
+    return
+  }
+
+  try {
+    await axios.put(
+      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/cambiar-contraseña`,
+      { nuevaContraseña: nuevaPassword.value },
+      {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      }
+    )
+
+    // Actualiza auth si fuera necesario
+    auth.usuario.cambiarContraseña = false
+    localStorage.setItem('usuario', JSON.stringify(auth.usuario))
+
+    alert('Contraseña cambiada correctamente')
+    mostrarModalPassword.value = false
+    nuevaPassword.value = ''
+    confirmacionPassword.value = ''
+  } catch (err) {
+    errorPassword.value = 'Error al cambiar la contraseña'
+    console.error(err)
+  }
+}
+
 
 </script>
 
@@ -151,48 +220,82 @@ async function cargarImagenConToken() {
   .nav-item.dropdown:hover .dropdown-menu {
     display: block;
     margin-top: 0;
-    transform: translateX(-105px);
-    /* ajusta según el ancho */
+    transform: translateX(-20px);
+    /* ✅ menor desplazamiento horizontal */
     min-width: 220px;
-    /* ✅ hace el menú más ancho */
     padding: 10px;
+
   }
 }
 
-/* Centrar el dropdown en móviles */
+/* Centrar dropdown en móviles y alinear mejor */
 .dropdown-menu {
-  transition: all 0.2s ease-in-out;
-  left: 100px !important;
-  right: 0 !important;
-  margin: auto;
+  right: 0;
+  left: auto;
+  transform: none;
+  width: 100%;
+  max-width: 220px;
+}
+
+/* Logo y título bien alineados */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand img {
+  height: 36px;
   width: auto;
-  max-width: 300px;
-  /* opcional: máximo en móvil */
 }
 
-/* Título más pequeño en pantallas pequeñas */
-.titulo-app {
-  font-size: 1rem;
-  white-space: nowrap;
-}
-
-/* Nombre de usuario más pequeño en móvil y truncado */
+/* Nombre del usuario con truncamiento */
 .nombre-usuario {
-  font-size: 0.85rem;
-  max-width: 140px;
+  font-size: 0.95rem;
+  min-width: 100px;
+  /* Espacio mínimo reservado */
+  max-width: auto;
+  /* No crecer más allá de esto */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: inline-block;
+  /* Asegura que respeta el ancho */
 }
 
-/* Logo más pequeño si quieres más espacio */
-.navbar-brand img {
-  height: 32px;
-}
 
-/* Ajustes generales de navbar */
+
+/* Ajustes de navbar general */
 .navbar {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 64px;
 }
+
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-warning {
+  border-left: 8px solid #ffc107;
+}
+
 </style>

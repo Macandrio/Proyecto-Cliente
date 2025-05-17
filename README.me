@@ -1,1 +1,68 @@
-npm run dev
+1. Prepara el proyecto con docker
+    * crear un dockerfile
+    
+        # Etapa 1: construir la app
+        FROM node:20-alpine as build
+        WORKDIR /app
+        COPY . .
+        RUN npm install && npm run build
+
+        # Etapa 2: servir con Nginx
+        FROM nginx:alpine
+        COPY --from=build /app/dist /usr/share/nginx/html
+        EXPOSE 80
+
+    * crear docker-compose.yml
+        services:
+            vue-frontend:
+                build: .
+                container_name: vue-frontend
+                ports:
+                - "8080:80"
+    
+
+2.Construye la imagen localmente
+    docker build -t vueapp .
+
+    * Etiqueta la imagen para Docker Hub
+        docker tag vueapp tucuenta/vueapp:latest
+
+    * Haz login en Docker Hub
+        docker login
+
+    * Sube la imagen a Docker Hub
+        docker push macandrio/front:latest
+
+
+3.Descargarla y ejecutarla en AWS EC2
+    * Conéctate por SSH a tu instancia
+        ssh -i tu-clave.pem ubuntu@<IP-DE-TU-EC2>
+
+    * Instala Docker y Docker Compose
+        sudo apt update
+        sudo apt install -y docker.io
+        sudo systemctl enable --now docker
+
+        # Instalar Docker Compose
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+    * Crea un archivo docker-compose.yml
+        version: '3'
+        services:
+        vueapp:
+            image: tucuenta/vueapp:latest
+            ports:
+            - "80:80"
+
+    * Y ejecútalo con
+        docker-compose up -d
+
+4.Abrir los puertos 80 de aws
+    * Ve a tu panel de Security Groups en AWS
+    * Añade una regla de entrada
+        Tipo: HTTP
+        Puerto: 80
+        Fuente: 0.0.0.0/0 (o tu IP para mayor seguridad)
+
+4.Abre tu navegador y pon la IP

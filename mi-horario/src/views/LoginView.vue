@@ -10,7 +10,7 @@
           <form @submit.prevent="login">
             <div class="mb-3">
               <label class="form-label text-muted">Correo Electrónico</label>
-              <input v-model="username" type="email" class="form-control" required />
+              <input v-model="username" type="text" class="form-control" required />
             </div>
             <div class="mb-3">
               <label class="form-label text-muted">Contraseña</label>
@@ -76,6 +76,15 @@ const mostrarRecuperacion = ref(false)
 
 async function login() {
   errorLogin.value = false
+
+  const usuarioEsAdmin = username.value.toLowerCase() === 'admin'
+  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.value)
+
+  if (!usuarioEsAdmin && !emailValido) {
+    errorLogin.value = true
+    return
+  }
+
   const ok = await auth.login(username.value, password.value)
   if (ok) {
     router.push('/home')
@@ -84,10 +93,11 @@ async function login() {
   }
 }
 
+
 async function enviarCorreo() {
   mensaje.value = ''
   try {
-    const response = await axios.post('http://localhost:8081/api/recuperacion-password', {
+    const response = await axios.post('http://52.72.185.156:8081/api/recuperacion-password', {
       correoRecuperacion: correo.value
     })
     mensaje.value = response.data

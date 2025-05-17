@@ -91,7 +91,7 @@ async function cargarAusencias() {
   try {
     console.log('🔍 ID de usuario que se enviará al backend:', props.idUsuario) // 👈 AÑADIDO
 
-    const response = await axios.get(`http://localhost:8081/api/ausencias?idusuario=${props.idUsuario}`, {
+    const response = await axios.get(`http://52.72.185.156:8081/api/ausencias?idusuario=${props.idUsuario}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -135,7 +135,7 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
       console.log(payload)
     }
 
-    await axios.delete('http://localhost:8081/api/ausencias', {
+    await axios.delete('http://52.72.185.156:8081/api/ausencias', {
       data: payload,
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -159,7 +159,7 @@ async function justificarAusenciasDia(fecha) {
 
   try {
     await axios.patch(
-  'http://localhost:8081/api/ausencias/justificar-dia',
+  'http://52.72.185.156:8081/api/ausencias/justificar-dia',
   payload,
   {
     headers: {
