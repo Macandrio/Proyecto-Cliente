@@ -48,30 +48,39 @@
   })
   
   async function crearAusencia() {
-    try {
-      const payload = {
-        fecha: nuevaAusencia.value.fecha,
-        horaInicio: nuevaAusencia.value.horaInicio,
-        horaFin: nuevaAusencia.value.horaFin,
-        motivo: nuevaAusencia.value.motivo,
-        idProfesor: props.idProfesor
-      }
-  
-      await axios.post('http://52.72.185.156:8081/api/ausencias', payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      })
-  
-      emit('ausenciaCreada')
-      // Limpiar formulario si se desea
-      nuevaAusencia.value = { fecha: '', horaInicio: '', horaFin: '', motivo: '' }
-  
-    } catch (error) {
-      console.error('Error al crear ausencia:', error)
-      emit('error', 'No se pudo crear la ausencia.')
+  try {
+    const payload = {
+      fecha: nuevaAusencia.value.fecha,
+      horaInicio: nuevaAusencia.value.horaInicio,
+      horaFin: nuevaAusencia.value.horaFin,
+      motivo: nuevaAusencia.value.motivo,
+      idProfesor: props.idProfesor
     }
+
+    const response = await axios.post('http://localhost:8081/api/ausencias', payload, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    console.log('✅ Ausencia creada. Respuesta del backend:', response)
+    console.log('📨 response.data:', response.data)
+
+    emit('ausenciaCreada')
+
+    // Limpiar formulario
+    nuevaAusencia.value = { fecha: '', horaInicio: '', horaFin: '', motivo: '' }
+
+  } catch (error) {
+    console.error('❌ Error al crear ausencia:', error)
+    console.log('⚠️ error.response:', error.response)
+    console.log('📩 error.response.data:', error.response?.data)
+
+    const mensaje = error.response.data.message || 'No se pudo crear la ausencia.'
+    emit('error', mensaje)
   }
+}
+
   </script>
   

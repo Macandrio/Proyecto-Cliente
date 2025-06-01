@@ -9,7 +9,9 @@
             <input type="file" accept="image/*" ref="inputArchivo" @change="subirImagen" style="display: none;" />
 
             <img :src="imagenPerfil || imagenPorDefecto" alt="Foto de perfil" class="rounded-circle"
-                style="width: 150px; height: 150px; object-fit: cover; cursor: pointer;" @click="confirmarYSubir" />
+                :style="{ width: '150px', height: '150px', objectFit: 'cover', cursor: profesor?.usuario ? 'pointer' : 'not-allowed' }"
+                @click="profesor?.usuario && confirmarYSubir()" />
+
 
             <p class="mt-3">{{ profesor?.nombre }}</p>
             <p v-if="profesor?.usuario"><strong>Email:</strong> {{ profesor.usuario.email }}</p>
@@ -101,7 +103,7 @@ function mostrarFormulario(tipo) {
 
 async function obtenerDatosProfesor() {
     try {
-        const response = await axios.get(`http://52.72.185.156:8081/api/profesores/${idProfesor}`, {
+        const response = await axios.get(`http://localhost:8081/api/profesores/${idProfesor}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         profesor.value = response.data
@@ -116,7 +118,7 @@ async function cargarImagen() {
         const idUsuario = profesor.value?.usuario?.id
         if (!idUsuario || !profesor.value.usuario.imagen) return
 
-        const response = await axios.get(`http://52.72.185.156:8081/api/usuarios/${idUsuario}/imagen`, {
+        const response = await axios.get(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
             responseType: 'arraybuffer',
             validateStatus: status => status === 200
@@ -145,11 +147,11 @@ async function subirImagen(event) {
     formData.append('imagen', archivo)
 
     try {
-        await axios.post(`http://52.72.185.156:8081/api/usuarios/${idUsuario}/imagen`, formData, {
+        await axios.post(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, formData, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         mostrarModal('✅ Imagen actualizada', 'La imagen de perfil se actualizó correctamente.', 'success')
-        cargarImagen()
+        await obtenerDatosProfesor()
     } catch {
         mostrarModal('❌ Error', 'No se pudo subir la imagen.', 'error')
     }
@@ -171,25 +173,36 @@ async function guardarUsuario(datosFormulario) {
     isLoading.value = true
 
     try {
-        await axios.post(`http://52.72.185.156:8081/api/usuarios/crear-con-profesor/${idProfesor}`, payload, {
+        const response = await axios.post(`http://localhost:8081/api/usuarios/crear-con-profesor/${idProfesor}`, payload, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             }
         })
+
+        console.log('✅ Usuario creado. Respuesta del backend:', response)
         mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success')
         formularioActivo.value = null
         await obtenerDatosProfesor()
     } catch (error) {
+        console.error('❌ Error al crear usuario:', error)
+        console.log('⚠️ error.response:', error.response)
+        console.log('📩 error.response.data:', error.response?.data)
+
         if (error.response?.status === 400 && error.response.data) {
             erroresFormulario.value = error.response.data
+
+            // Mostrar mensaje si el backend devuelve "mensaje"
+            const mensaje = error.response.data.mensaje || 'Error correo no valido.'
+            mostrarModal('❌ Error', mensaje, 'error')
         } else {
-            mostrarModal('❌ Error', 'Ese usuario ya existe o hay otro error.', 'error')
+            mostrarModal('❌ Error', mensaje, 'error')
         }
     } finally {
         isLoading.value = false
     }
 }
+
 
 async function modificarUsuario(datosFormulario) {
     const { idUsuario, email, password, rol, nombre } = datosFormulario
@@ -202,25 +215,34 @@ async function modificarUsuario(datosFormulario) {
     isLoading.value = true
 
     try {
-        await axios.put(`http://52.72.185.156:8081/api/usuarios/${idUsuario}`, payload, {
+        const response = await axios.put(`http://localhost:8081/api/usuarios/${idUsuario}`, payload, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json'
             }
         })
+
+        console.log('✅ Usuario modificado. Respuesta del backend:', response)
+        console.log('📨 response.data:', response.data)
+
         mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success')
         formularioActivo.value = null
         await obtenerDatosProfesor()
     } catch (error) {
+        console.error('❌ Error al modificar usuario:', error)
+        console.log('⚠️ error.response:', error.response)
+        console.log('📩 error.response.data:', error.response?.data)
+
         if (error.response?.status === 400 && error.response.data) {
             erroresFormulario.value = error.response.data
         } else {
-            mostrarModal('❌ Error', 'El usuario ya existe o hay otro error.', 'error')
+            mostrarModal('❌ Error', response.data, 'error')
         }
     } finally {
         isLoading.value = false
     }
 }
+
 
 async function eliminarUsuario() {
     const usuario = profesor.value?.usuario
@@ -234,7 +256,7 @@ async function eliminarUsuario() {
     isLoading.value = true
 
     try {
-        await axios.delete(`http://52.72.185.156:8081/api/usuarios/${usuario.id}`, {
+        await axios.delete(`http://localhost:8081/api/usuarios/${usuario.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         mostrarModal('✅ Usuario eliminado', `El usuario de ${nombre} ha sido eliminado.`, 'success')

@@ -97,14 +97,23 @@ async function login() {
 async function enviarCorreo() {
   mensaje.value = ''
   try {
-    const response = await axios.post('http://52.72.185.156:8081/api/recuperacion-password', {
+    const response = await axios.post('http://localhost:8081/api/recuperacion-password', {
       correoRecuperacion: correo.value
     })
+
+    console.log('✅ Respuesta del backend:', response)        // ← muestra todo
+    console.log('📨 response.data:', response.data)           // ← muestra solo los datos útiles
+
     mensaje.value = response.data
   } catch (error) {
-    mensaje.value = 'Error al enviar el correo.'
+    console.error('❌ Error completo:', error)                // ← muestra todo el error
+    console.log('⚠️ error.response:', error.response)        // ← útil si quieres ver status/data del backend
+
+    const mensajeError = error.response?.data?.mensaje || 'Error al enviar el correo.'
+    mensaje.value = mensajeError
   }
 }
+
 </script>
 
 

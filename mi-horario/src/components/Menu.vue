@@ -90,6 +90,15 @@
     </div>
   </div>
 
+
+  <ModalMensaje
+  :visible="modalVisible"
+  :titulo="modalTitulo"
+  :mensaje="modalMensaje"
+  :tipo="modalTipo"
+  @cerrar="cerrarModal"
+/>
+
 </template>
 
 <script setup>
@@ -98,6 +107,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import logo from '../assets/logo_iespsur.jpeg'
 import { ref, onMounted } from 'vue'
+import ModalMensaje from '../components/ModalMensaje.vue'
 
 const imagenPerfil = ref(null)
 
@@ -106,7 +116,22 @@ const imagenPerfil = ref(null)
 const router = useRouter()
 const auth = useAuthStore()
 
-const nombreUsuario = auth.username || 'Usuario'
+// 👇 Modal de mensajes
+const modalVisible = ref(false)
+const modalTitulo = ref('')
+const modalMensaje = ref('')
+const modalTipo = ref('info')
+
+function mostrarModal(titulo, mensaje, tipo = 'info') {
+  modalTitulo.value = titulo
+  modalMensaje.value = mensaje
+  modalTipo.value = tipo
+  modalVisible.value = true
+}
+
+function cerrarModal() {
+  modalVisible.value = false
+}
 
 onMounted(() => {
   cargarImagenConToken()
@@ -126,21 +151,26 @@ function subirImagen(event) {
   formData.append('imagen', archivo)
 
   axios.post(
-    `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
+    `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
     formData,
     {
       headers: {
         Authorization: `Bearer ${auth.token}`
       }
     }
-  ).then(() => {
-    alert('Imagen subida con éxito')
-    cargarImagenConToken() // ✅ refresca imagen
+  ).then((response) => {
+    console.log('✅ Respuesta del backend (imagen subida):', response)
+    console.log('📨 response.data:', response.data)
+
+    mostrarModal('Éxito', response.data, 'success')
+    cargarImagenConToken()
   }).catch(err => {
-    console.error(err)
-    alert('Error al subir la imagen')
+    console.error('❌ Error al subir imagen:', err)
+    const mensaje = err.response?.data?.mensaje || 'Error al subir la imagen'
+    mostrarModal('Error', mensaje, 'error')
   })
 }
+
 
 const imagenPorDefecto = 'https://img.freepik.com/vector-premium/icono-usuario-avatar-perfil-usuario-icono-persona-imagen-perfil-silueta-neutral-genero-adecuado_697711-1132.jpg'
 
@@ -148,7 +178,7 @@ const imagenPorDefecto = 'https://img.freepik.com/vector-premium/icono-usuario-a
 async function cargarImagenConToken() {
   try {
     const response = await axios.get(
-      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/imagen`,
+      `http://localhost:8081/api/usuarios/${auth.usuario.id}/imagen`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`
@@ -188,27 +218,32 @@ async function cambiarPassword() {
   }
 
   try {
-    await axios.put(
-      `http://52.72.185.156:8081/api/usuarios/${auth.usuario.id}/cambiar-contraseña`,
+    const response = await axios.put(
+      `http://localhost:8081/api/usuarios/${auth.usuario.id}/cambiar-contraseña`,
       { nuevaContraseña: nuevaPassword.value },
       {
         headers: { Authorization: `Bearer ${auth.token}` }
       }
     )
 
+    console.log('Respuesta del backend:', response.data)
+
     // Actualiza auth si fuera necesario
     auth.usuario.cambiarContraseña = false
     localStorage.setItem('usuario', JSON.stringify(auth.usuario))
 
-    alert('Contraseña cambiada correctamente')
+    mostrarModal('Éxito', 'Contraseña cambiada correctamente', 'success')
     mostrarModalPassword.value = false
     nuevaPassword.value = ''
     confirmacionPassword.value = ''
   } catch (err) {
-    errorPassword.value = 'Error al cambiar la contraseña'
-    console.error(err)
+    const mensaje = err.response?.data?.mensaje || 'Error al cambiar la contraseña'
+    errorPassword.value = mensaje
+    console.error('Error al cambiar contraseña:', err)
+    mostrarModal('Error', mensaje, 'error')
   }
 }
+
 
 
 </script>

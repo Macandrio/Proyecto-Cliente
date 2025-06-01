@@ -12,12 +12,22 @@
       <button class="btn btn-primary w-100" @click="cambiar">Cambiar contraseña</button>
     </div>
   </div>
+
+  <ModalMensaje
+  :visible="modalVisible"
+  :titulo="modalTitulo"
+  :mensaje="modalMensaje"
+  :tipo="modalTipo"
+  @cerrar="cerrarModal"
+/>
+
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import api from '../axios'
 import { useAuthStore } from '../stores/auth'
+import ModalMensaje from '../components/ModalMensaje.vue'
 
 const props = defineProps({
   visible: Boolean
@@ -29,10 +39,27 @@ const nuevaPassword = ref('')
 const confirmacionPassword = ref('')
 const error = ref('')
 
+const modalVisible = ref(false)
+const modalTitulo = ref('')
+const modalMensaje = ref('')
+const modalTipo = ref('info')
+
+function mostrarModal(titulo, mensaje, tipo = 'info') {
+  modalTitulo.value = titulo
+  modalMensaje.value = mensaje
+  modalTipo.value = tipo
+  modalVisible.value = true
+}
+
+function cerrarModal() {
+  modalVisible.value = false
+}
+
 
 async function cambiar() {
   error.value = ''
 
+  // Validación (puedes activarla si la necesitas)
   if (!nuevaPassword.value || nuevaPassword.value.length < 6) {
     error.value = 'La contraseña debe tener al menos 6 caracteres'
     return
@@ -44,21 +71,28 @@ async function cambiar() {
   }
 
   try {
-    await api.put(`/usuarios/${auth.usuario.id}/cambiar-contraseña`, {
+    const response = await api.put(`/usuarios/${auth.usuario.id}/cambiar-contraseña`, {
       nuevaContraseña: nuevaPassword.value
     })
+
+    console.log('✅ Respuesta del backend:', response)
+    console.log('📨 Datos:', response.data)
 
     // Actualizar auth store y localStorage
     auth.usuario.cambiarContraseña = false
     localStorage.setItem('usuario', JSON.stringify(auth.usuario))
 
     emit('cerrar')
-    alert('Contraseña cambiada correctamente') // este puede seguir si quieres
+
+    mostrarModal('Éxito', 'Contraseña cambiada correctamente', 'success') // modalmensaje
   } catch (err) {
-    error.value = 'Error al cambiar la contraseña'
-    console.error(err)
+    console.error('❌ Error al cambiar contraseña:', err)
+    const mensajeError = err.response?.data?.mensaje || 'Error al cambiar la contraseña'
+    error.value = mensajeError
+    mostrarModal('Error', mensajeError, 'error') // modalmensaje
   }
 }
+
 
 </script>
 

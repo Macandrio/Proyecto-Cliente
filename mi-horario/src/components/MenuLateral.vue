@@ -35,7 +35,10 @@
         <button class="btn btn-primary w-100 mb-2" @click="abrirArchivoSelec">Subir archivo de datos</button>
         <router-link to="/datos-profesorado" class="btn btn-primary w-100 mb-2" @click="cerrarOffcanvas">Datos
           profesorado</router-link>
-        <button class="btn btn-primary w-100 mb-2">Generar partes diario</button>
+        <button class="btn btn-primary w-100 mb-2" @click="generarParteDiario">
+          Generar partes diario
+        </button>
+
       </div>
 
 
@@ -47,13 +50,8 @@
     </div>
   </div>
 
-  <modalmensaje
-  :visible="modalVisible"
-  :titulo="modalTitulo"
-  :mensaje="modalMensaje"
-  :tipo="modalTipo"
-  @cerrar="cerrarModal"
-/>
+  <modalmensaje :visible="modalVisible" :titulo="modalTitulo" :mensaje="modalMensaje" :tipo="modalTipo"
+    @cerrar="cerrarModal" />
 
 </template>
 
@@ -109,7 +107,7 @@ function subirArchivoSelec(event) {
     cargando.value = true
 
     try {
-      const response = await axios.post('http://52.72.185.156:8081/api/horarios/importacion', { file: base64File }, {
+      const response = await axios.post('http://localhost:8081/api/horarios/importacion', { file: base64File }, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -178,7 +176,7 @@ onMounted(() => {
       cerrarOffcanvas()
     })
   }, 100)
-  
+
 })
 
 
@@ -192,6 +190,49 @@ function mostrarModal(titulo, mensaje, tipo = 'info') {
 function cerrarModal() {
   modalVisible.value = false
 }
+
+
+
+async function generarParteDiario() {
+  cargando.value = true
+  try {
+    const response = await axios.get('http://localhost:8081/api/parte-ausencias', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    const base64PDF = response.data
+    const byteCharacters = atob(base64PDF)
+    const byteNumbers = Array.from(byteCharacters, char => char.charCodeAt(0))
+    const byteArray = new Uint8Array(byteNumbers)
+    const blob = new Blob([byteArray], { type: 'application/pdf' })
+
+    // ➕ Formatear la fecha actual
+    const fecha = new Date()
+    const dia = String(fecha.getDate()).padStart(2, '0')
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0')
+    const anio = fecha.getFullYear()
+    const nombreArchivo = `parte-ausencias-${dia}-${mes}-${anio}.pdf`
+
+    // Descargar el PDF con fecha en el nombre
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = nombreArchivo
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+  } catch (error) {
+    console.error('Error al generar el parte diario:', error)
+    mostrarModal('Error', 'No se pudo generar el parte diario.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
+
 
 
 </script>

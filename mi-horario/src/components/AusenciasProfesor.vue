@@ -7,7 +7,7 @@
       No hay ausencias registradas para este profesor.
     </div>
 
-    <div v-else >
+    <div v-else>
       <div v-for="ausenciaDia in ausenciasOrdenadas" :key="ausenciaDia.fecha" class="mb-4">
         <div class="card">
           <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
@@ -38,7 +38,9 @@
               </thead>
               <tbody>
                 <tr v-for="ausencia in ausenciaDia.lstAusenciaFecha" :key="ausencia.id">
-                  <td>{{ ausencia.horario.franja.horaInicio }} - {{ ausencia.horario.franja.horaFin }}</td>
+                  <td>{{ formatearHora(ausencia.horario.franja.horaInicio) }} - {{
+                    formatearHora(ausencia.horario.franja.horaFin) }}</td>
+
                   <td>{{ ausencia.horario.asignatura.nombre }}</td>
                   <td>{{ ausencia.horario.aula?.codigo || '—' }}</td>
                   <td>{{ ausencia.horario.curso?.nombre || '—' }}</td>
@@ -89,9 +91,9 @@ onMounted(() => {
 
 async function cargarAusencias() {
   try {
-    console.log('🔍 ID de usuario que se enviará al backend:', props.idUsuario) // 👈 AÑADIDO
+    console.log('🔍 ID de usuario que se enviará al backend:', props.idUsuario)
 
-    const response = await axios.get(`http://52.72.185.156:8081/api/ausencias?idusuario=${props.idUsuario}`, {
+    const response = await axios.get(`http://localhost:8081/api/ausencias?idusuario=${props.idUsuario}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -100,6 +102,12 @@ async function cargarAusencias() {
   } catch (error) {
     console.error('Error al cargar ausencias del profesor:', error)
   }
+}
+
+function formatearHora(horaStr) {
+  if (!horaStr) return ''
+  const [hh, mm] = horaStr.split(':')
+  return `${hh}:${mm}`
 }
 
 
@@ -135,7 +143,7 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
       console.log(payload)
     }
 
-    await axios.delete('http://52.72.185.156:8081/api/ausencias', {
+    await axios.delete('http://localhost:8081/api/ausencias', {
       data: payload,
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -153,20 +161,22 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
 
 async function justificarAusenciasDia(fecha) {
   if (!confirm(`¿Justificar todas las ausencias del día ${formatFecha(fecha)}?`)) return
-  const payload = {fecha: new Date(fecha).toISOString().split('T')[0],
-                    idProfesor: idProfesor}
+  const payload = {
+    fecha: new Date(fecha).toISOString().split('T')[0],
+    idProfesor: idProfesor
+  }
   console.log(payload)
 
   try {
     await axios.patch(
-  'http://52.72.185.156:8081/api/ausencias/justificar-dia',
-  payload,
-  {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('token')}`
-    }
-  }
-)
+      'http://localhost:8081/api/ausencias/justificar-dia',
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    )
 
     await cargarAusencias()
     mostrarModal('Ausencias justificadas', 'Se justificaron correctamente.', 'success')

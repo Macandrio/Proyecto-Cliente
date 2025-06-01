@@ -216,7 +216,7 @@ const crearAusencia = async () => {
 
     console.log('Enviando DTO:', dto)
 
-    await axios.post('http://52.72.185.156:8081/api/ausencias', dto, {
+    await axios.post('http://localhost:8081/api/ausencias', dto, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -252,7 +252,7 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
     if (id) payload.id = id
     if (fecha) payload.fecha = new Date(fecha).toISOString().split('T')[0]
 
-    await axios.delete('http://52.72.185.156:8081/api/ausencias', {
+    await axios.delete('http://localhost:8081/api/ausencias', {
       data: payload,
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -275,7 +275,7 @@ const cargarAusencias = async () => {
   try {
     console .log(auth.usuario.id)
     const idUsuario = auth.usuario.id
-    const url = `http://52.72.185.156:8081/api/ausencias?idusuario=${idUsuario}`
+    const url = `http://localhost:8081/api/ausencias?idusuario=${idUsuario}`
 
     const response = await axios.get(url, {
       headers: {
