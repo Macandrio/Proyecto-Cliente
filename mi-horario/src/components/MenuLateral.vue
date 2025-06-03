@@ -61,6 +61,7 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import modalmensaje from '../components/ModalMensaje.vue'
+import Horario from '../components/Horario.vue'
 
 
 // Estado del modal
@@ -114,15 +115,17 @@ function subirArchivoSelec(event) {
         }
       })
 
-      console.log('Respuesta del backend:', response.data)
+      console.log(' Respuesta del backend:', response.data)
 
-      // Marca para mostrar el modal después de recargar
-      localStorage.setItem('mostrarModalImportacion', '1')
-      location.reload()
+      // Mostrar modal con mensaje genérico
+      mostrarModal(' Importación exitosa', response.data , 'success')
+
+      // Refrescar el horario (función expuesta desde el componente Horario.vue)
+      Horario.value?.cargarDatos()
 
     } catch (error) {
-      console.error('Error al importar el archivo:', error)
-      mostrarModal('Error', 'Error al importar el archivo.', 'error')
+      console.error(' Error al importar el archivo:', error)
+      mostrarModal(' Error', 'No se pudo importar el archivo.', 'error')
     } finally {
       cargando.value = false
     }
@@ -130,6 +133,7 @@ function subirArchivoSelec(event) {
 
   reader.readAsDataURL(file)
 }
+
 
 
 

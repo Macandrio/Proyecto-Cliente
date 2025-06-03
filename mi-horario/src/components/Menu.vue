@@ -15,11 +15,19 @@
       </router-link>
 
 
-      <div class="d-lg-none ms-auto d-flex align-items-center">
-  <router-link to="/perfil" class="btn btn-outline-light fw-bold nombre-usuario">
-    👤 {{ auth.usuario.nombre }}
-  </router-link>
-</div>
+      <!-- Botón de perfil solo en móvil -->
+      <ul class="navbar-nav d-lg-none ms-auto">
+        <li class="nav-item">
+          <router-link to="/perfil" class="nav-link p-0">
+            <img :src="imagenPerfil || imagenPorDefecto" class="rounded-circle me-2"
+              style="width: 32px; height: 32px; object-fit: cover;" alt="Perfil" />
+          </router-link>
+        </li>
+      </ul>
+
+
+
+
 
 
 
@@ -91,13 +99,8 @@
   </div>
 
 
-  <ModalMensaje
-  :visible="modalVisible"
-  :titulo="modalTitulo"
-  :mensaje="modalMensaje"
-  :tipo="modalTipo"
-  @cerrar="cerrarModal"
-/>
+  <ModalMensaje :visible="modalVisible" :titulo="modalTitulo" :mensaje="modalMensaje" :tipo="modalTipo"
+    @cerrar="cerrarModal" />
 
 </template>
 
@@ -159,14 +162,14 @@ function subirImagen(event) {
       }
     }
   ).then((response) => {
-    console.log('✅ Respuesta del backend (imagen subida):', response)
+    console.log(' Respuesta del backend (imagen subida):', response)
     console.log('📨 response.data:', response.data)
 
-    mostrarModal('Éxito', response.data, 'success')
+    mostrarModal('Imagen subida', response.data, 'success')
     cargarImagenConToken()
   }).catch(err => {
-    console.error('❌ Error al subir imagen:', err)
-    const mensaje = err.response?.data?.mensaje || 'Error al subir la imagen'
+    console.error('Error al subir imagen:', err)
+    const mensaje = err.response?.data || 'Error al subir la imagen'
     mostrarModal('Error', mensaje, 'error')
   })
 }
@@ -232,7 +235,7 @@ async function cambiarPassword() {
     auth.usuario.cambiarContraseña = false
     localStorage.setItem('usuario', JSON.stringify(auth.usuario))
 
-    mostrarModal('Éxito', 'Contraseña cambiada correctamente', 'success')
+    mostrarModal('Contraseña Modificada', 'Contraseña cambiada correctamente', 'success')
     mostrarModalPassword.value = false
     nuevaPassword.value = ''
     confirmacionPassword.value = ''
@@ -252,15 +255,14 @@ async function cambiarPassword() {
 <style scoped>
 /* Mostrar dropdown al pasar el mouse (solo en escritorio) */
 @media (min-width: 992px) {
-  .nav-item.dropdown:hover .dropdown-menu {
-    display: block;
-    margin-top: 0;
-    transform: translateX(-20px);
-    /* ✅ menor desplazamiento horizontal */
-    min-width: 220px;
-    padding: 10px;
+  .navbar {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 64px;
+  z-index: 1055; /* Añade esto */
+}
 
-  }
+
 }
 
 /* Centrar dropdown en móviles y alinear mejor */
@@ -332,5 +334,4 @@ async function cambiarPassword() {
 .modal-warning {
   border-left: 8px solid #ffc107;
 }
-
 </style>

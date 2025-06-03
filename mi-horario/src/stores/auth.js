@@ -16,7 +16,7 @@ export const useAuthStore = defineStore('auth', {
           password
         })
     
-        console.log('✅ Respuesta del backend (login):', response)
+        console.log(' Respuesta del backend (login):', response)
         console.log('📨 Token recibido:', response.data.token)
         console.log('👤 Usuario recibido:', response.data.usuario)
     
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
     
         return true
       } catch (error) {
-        console.error('❌ Error en login:', error)
+        console.error(' Error en login:', error)
         console.log('⚠️ error.response:', error.response)
         console.log('📩 error.response.data:', error.response?.data)
     

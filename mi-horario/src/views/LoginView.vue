@@ -101,18 +101,18 @@ async function enviarCorreo() {
       correoRecuperacion: correo.value
     })
 
-    console.log('✅ Respuesta del backend:', response)        // ← muestra todo
-    console.log('📨 response.data:', response.data)           // ← muestra solo los datos útiles
+    console.log(' Respuesta del backend:', response)        // Muestra toda la respuesta
+    console.log('📨 response.data:', response.data)           // Muestra el cuerpo (JSON)
 
     mensaje.value = response.data
   } catch (error) {
-    console.error('❌ Error completo:', error)                // ← muestra todo el error
-    console.log('⚠️ error.response:', error.response)        // ← útil si quieres ver status/data del backend
+    console.error(' Error completo:', error)                // Muestra error completo
+    console.log('⚠️ error.response:', error.response)         // Info útil del backend
 
-    const mensajeError = error.response?.data?.mensaje || 'Error al enviar el correo.'
-    mensaje.value = mensajeError
+    mensaje.value = error.response?.data.message
   }
 }
+
 
 </script>
 

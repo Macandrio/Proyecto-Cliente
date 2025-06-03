@@ -75,7 +75,7 @@ async function cambiar() {
       nuevaContraseña: nuevaPassword.value
     })
 
-    console.log('✅ Respuesta del backend:', response)
+    console.log(' Respuesta del backend:', response)
     console.log('📨 Datos:', response.data)
 
     // Actualizar auth store y localStorage
@@ -84,12 +84,12 @@ async function cambiar() {
 
     emit('cerrar')
 
-    mostrarModal('Éxito', 'Contraseña cambiada correctamente', 'success') // modalmensaje
+    mostrarModal('Contraseña Modificada', 'Contraseña cambiada correctamente', 'success') // modalmensaje
   } catch (err) {
-    console.error('❌ Error al cambiar contraseña:', err)
+    console.error('Error al cambiar contraseña:', err)
     const mensajeError = err.response?.data?.mensaje || 'Error al cambiar la contraseña'
     error.value = mensajeError
-    mostrarModal('Error', mensajeError, 'error') // modalmensaje
+    mostrarModal('Error al cambiar contraseña', mensajeError, 'error') // modalmensaje
   }
 }
 

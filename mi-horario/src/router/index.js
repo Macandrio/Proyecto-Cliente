@@ -21,6 +21,7 @@ const routes = [
   { path: '/formulario/:id', component: FormularioUsuarioView },
   { path: '/mis-ausencias', component: AusenciasProfesorView },
   { path: '/datosusuario/:id', component: DatosUsuarioView },
+  { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]
 
 const router = createRouter({

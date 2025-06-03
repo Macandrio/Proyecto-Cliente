@@ -48,7 +48,7 @@
 
 
             <FormularioCrearAusencia v-if="mostrarFormularioAusencia" :idProfesor="profesor?.idProfesor"
-                @ausenciaCreada="onAusenciaCreada" @error="mensaje => mostrarModal('❌ Error', mensaje, 'error')" />
+                @ausenciaCreada="onAusenciaCreada" @error="mensaje => mostrarModal(' Error', mensaje, 'error')" />
 
             <AusenciasProfesor v-if="profesor?.usuario?.id" :idUsuario="profesor.usuario.id" :key="ausenciasKey" />
 
@@ -74,6 +74,7 @@ import FormularioCrearAusencia from '../components/FormularioCrearAusencia.vue'
 
 const route = useRoute()
 const idProfesor = route.params.id
+
 
 const profesor = ref(null)
 const imagenPerfil = ref(null)
@@ -107,7 +108,12 @@ async function obtenerDatosProfesor() {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
         profesor.value = response.data
-        cargarImagen()
+        if (!profesor.value.usuario || !profesor.value.usuario.imagen) {
+            imagenPerfil.value = null  // Limpiar imagen si no hay usuario o imagen
+        } else {
+            await cargarImagen()
+        }
+
     } catch (error) {
         mostrarModal('Error', 'No se pudo cargar el profesor.', 'error')
     }
@@ -147,15 +153,24 @@ async function subirImagen(event) {
     formData.append('imagen', archivo)
 
     try {
-        await axios.post(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, formData, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        const response = await axios.post(`http://localhost:8081/api/usuarios/${idUsuario}/imagen`, formData, {
+            headers: { 
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'multipart/form-data'
+            }
         })
-        mostrarModal('✅ Imagen actualizada', 'La imagen de perfil se actualizó correctamente.', 'success')
+        console.log(response)
+        mostrarModal(' Imagen actualizada', response.data, 'success')
         await obtenerDatosProfesor()
-    } catch {
-        mostrarModal('❌ Error', 'No se pudo subir la imagen.', 'error')
+
+    } catch (error) {
+        console.log(error)
+        const mensajeError = error.response?.data || 'Error desconocido'
+        mostrarModal(' Error', mensajeError, 'error')
     }
 }
+
+
 
 onMounted(() => {
     obtenerDatosProfesor()
@@ -165,7 +180,7 @@ async function guardarUsuario(datosFormulario) {
     const { idProfesor, email, password, rol, nombre } = datosFormulario
 
     if (!email || !password || !rol || !nombre || !idProfesor) {
-        mostrarModal('❌ Campos incompletos', 'Por favor, completa todos los campos.', 'warning')
+        mostrarModal(' Campos incompletos', 'Por favor, completa todos los campos.', 'warning')
         return
     }
 
@@ -180,12 +195,12 @@ async function guardarUsuario(datosFormulario) {
             }
         })
 
-        console.log('✅ Usuario creado. Respuesta del backend:', response)
-        mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success')
+        console.log(' Usuario creado. Respuesta del backend:', response)
+        mostrarModal('Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success')
         formularioActivo.value = null
         await obtenerDatosProfesor()
     } catch (error) {
-        console.error('❌ Error al crear usuario:', error)
+        console.error(' Error al crear usuario:', error)
         console.log('⚠️ error.response:', error.response)
         console.log('📩 error.response.data:', error.response?.data)
 
@@ -194,9 +209,9 @@ async function guardarUsuario(datosFormulario) {
 
             // Mostrar mensaje si el backend devuelve "mensaje"
             const mensaje = error.response.data.mensaje || 'Error correo no valido.'
-            mostrarModal('❌ Error', mensaje, 'error')
+            mostrarModal(' Error', mensaje, 'error')
         } else {
-            mostrarModal('❌ Error', mensaje, 'error')
+            mostrarModal(' Error', mensaje, 'error')
         }
     } finally {
         isLoading.value = false
@@ -207,7 +222,7 @@ async function guardarUsuario(datosFormulario) {
 async function modificarUsuario(datosFormulario) {
     const { idUsuario, email, password, rol, nombre } = datosFormulario
     if (!idUsuario) {
-        mostrarModal('❌ Error', 'El ID del usuario no puede ser nulo.', 'error')
+        mostrarModal(' Error', 'El ID del usuario no puede ser nulo.', 'error')
         return
     }
 
@@ -222,21 +237,21 @@ async function modificarUsuario(datosFormulario) {
             }
         })
 
-        console.log('✅ Usuario modificado. Respuesta del backend:', response)
+        console.log(' Usuario modificado. Respuesta del backend:', response)
         console.log('📨 response.data:', response.data)
 
-        mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success')
+        mostrarModal(' Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success')
         formularioActivo.value = null
         await obtenerDatosProfesor()
     } catch (error) {
-        console.error('❌ Error al modificar usuario:', error)
+        console.error(' Error al modificar usuario:', error)
         console.log('⚠️ error.response:', error.response)
         console.log('📩 error.response.data:', error.response?.data)
 
         if (error.response?.status === 400 && error.response.data) {
             erroresFormulario.value = error.response.data
         } else {
-            mostrarModal('❌ Error', response.data, 'error')
+            mostrarModal(' Error', response.data, 'error')
         }
     } finally {
         isLoading.value = false
@@ -259,12 +274,12 @@ async function eliminarUsuario() {
         await axios.delete(`http://localhost:8081/api/usuarios/${usuario.id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
-        mostrarModal('✅ Usuario eliminado', `El usuario de ${nombre} ha sido eliminado.`, 'success')
-        await obtenerDatosProfesor()
+        mostrarModal(' Usuario eliminado', `El usuario de ${nombre} ha sido eliminado.`, 'success')
         formularioActivo.value = null
+        await obtenerDatosProfesor()
     } catch (error) {
         console.error('Error al eliminar usuario:', error)
-        mostrarModal('❌ Error', 'No se pudo eliminar el usuario.', 'error')
+        mostrarModal(' Error', 'No se pudo eliminar el usuario.', 'error')
     } finally {
         isLoading.value = false
     }
@@ -273,7 +288,7 @@ async function eliminarUsuario() {
 const mostrarFormularioAusencia = ref(false)
 
 function onAusenciaCreada() {
-    mostrarModal('✅ Ausencia creada', 'La ausencia fue registrada correctamente.', 'success')
+    mostrarModal(' Ausencia creada', 'La ausencia fue registrada correctamente.', 'success')
     mostrarFormularioAusencia.value = false
     ausenciasKey.value = Date.now() // fuerza el render del componente AusenciasProfesor
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid pt-4">
-    <!-- Vista de escritorio -->
+    <!-- Vista escritorio -->
     <div class="d-none d-md-block">
       <table class="table table-bordered text-start align-middle w-100 small">
         <thead class="table-dark text-center">
@@ -12,13 +12,13 @@
         <tbody>
           <tr v-for="franja in franjasOrdenadas" :key="franja.horaInicio">
             <td class="bg-light fw-bold text-center">
-              {{ franja.horaInicio.slice(0,5) }} - {{ franja.horaFin.slice(0,5) }}
+              {{ franja.horaInicio.slice(0, 5) }} - {{ franja.horaFin.slice(0, 5) }}
             </td>
             <td v-for="dia in diasSemana" :key="dia" style="padding: 4px; font-size: 13px; text-align: left"
-                :style="esRecreo(franja) 
-                  ? estiloRecreo 
-                  : getClases(dia, franja)[0] 
-                    ? obtenerEstilosAsignatura(getClases(dia, franja)[0].asignatura?.nombre) 
+              :style="esRecreo(franja)
+                  ? estiloRecreo
+                  : getClases(dia, franja)[0]
+                    ? obtenerEstilosAsignatura(getClases(dia, franja)[0].asignatura?.nombre)
                     : {}">
               <div v-if="esRecreo(franja)">
                 <strong>Recreo</strong>
@@ -36,8 +36,51 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Vista móvil: un solo día visible, deslizable -->
+    <div class="d-md-none">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <button class="btn btn-sm btn-outline-secondary" @click="diaAnterior" :disabled="diaActualIndex === 0">←</button>
+        <strong>{{ diasSemana[diaActualIndex] }}</strong>
+        <button class="btn btn-sm btn-outline-secondary" @click="diaSiguiente" :disabled="diaActualIndex === diasSemana.length - 1">→</button>
+      </div>
+      <table class="table table-bordered text-start align-middle w-100 small">
+        <thead class="table-dark text-center">
+          <tr>
+            <th style="width: 100px;">Franja</th>
+            <th style="width: 100%">Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="franja in franjasOrdenadas" :key="franja.horaInicio">
+            <td class="bg-light fw-bold text-center">
+              {{ franja.horaInicio.slice(0, 5) }} - {{ franja.horaFin.slice(0, 5) }}
+            </td>
+            <td style="font-size: 13px; padding: 6px;"
+              :style="esRecreo(franja)
+                ? estiloRecreo
+                : getClases(diaActual, franja)[0]
+                  ? obtenerEstilosAsignatura(getClases(diaActual, franja)[0].asignatura?.nombre)
+                  : {}">
+              <div v-if="esRecreo(franja)">
+                <strong>Recreo</strong>
+              </div>
+              <div v-else>
+                <div v-for="(clase, i) in getClases(diaActual, franja)" :key="i" class="mb-1">
+                  Aula: {{ clase.aula?.codigo || '-' }}<br />
+                  Curso: {{ clase.curso?.nombre || '-' }}<br />
+                  Asig: {{ clase.asignatura?.nombre || '-' }}
+                  <hr v-if="getClases(diaActual, franja).length > 1 && i < getClases(diaActual, franja).length - 1" />
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
@@ -45,6 +88,8 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 
 const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']
+const diaActualIndex = ref(0)
+const diaActual = computed(() => diasSemana[diaActualIndex.value])
 const horario = ref([])
 const route = useRoute()
 const idProfesor = route.params.id || null
@@ -58,15 +103,20 @@ const franjasOrdenadas = computed(() => {
   const mapa = new Map()
   for (const h of horario.value) {
     const clave = h.franja.horaInicio
-    if (!mapa.has(clave)) {
-      mapa.set(clave, h.franja)
-    }
+    if (!mapa.has(clave)) mapa.set(clave, h.franja)
   }
-  for (const recreo of franjasFijas) {
-    if (!mapa.has(recreo.horaInicio)) {
-      mapa.set(recreo.horaInicio, recreo)
-    }
+
+  const recreoSiempre = franjasFijas.find(f => f.horaInicio === '11:15:00')
+  if (recreoSiempre && !mapa.has(recreoSiempre.horaInicio)) {
+    mapa.set(recreoSiempre.horaInicio, recreoSiempre)
   }
+
+  const tieneClasesDespuesDe18 = horario.value.some(h => h.franja.horaInicio > '18:00:00')
+  const recreoTarde = franjasFijas.find(f => f.horaInicio === '18:00:00')
+  if (tieneClasesDespuesDe18 && recreoTarde && !mapa.has(recreoTarde.horaInicio)) {
+    mapa.set(recreoTarde.horaInicio, recreoTarde)
+  }
+
   return Array.from(mapa.values()).sort((a, b) => a.horaInicio.localeCompare(b.horaInicio))
 })
 
@@ -84,6 +134,14 @@ const estiloRecreo = {
   backgroundColor: 'rgba(255, 183, 77, 0.6)',
   border: '2px dashed orange',
   textAlign: 'center'
+}
+
+function diaAnterior() {
+  if (diaActualIndex.value > 0) diaActualIndex.value--
+}
+
+function diaSiguiente() {
+  if (diaActualIndex.value < diasSemana.length - 1) diaActualIndex.value++
 }
 
 onMounted(async () => {

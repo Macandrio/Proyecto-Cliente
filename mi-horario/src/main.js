@@ -11,6 +11,6 @@ import 'bootstrap'
 
 const app = createApp(App)
 
-app.use(createPinia())   // ✅ Primero Pinia
-app.use(router)          // ✅ Luego el router
+app.use(createPinia())   //  Primero Pinia
+app.use(router)          //  Luego el router
 app.mount('#app')

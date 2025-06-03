@@ -128,7 +128,7 @@ const eliminarAusencia = async ({ id = null, fecha = null }) => {
   } else if (fecha) {
     mensajeConfirmacion = `¿Estás seguro de eliminar las ausencias del día ${formatFecha(fecha)}?`
   } else {
-    console.warn('❌ Se necesita al menos un ID o una fecha para eliminar.')
+    console.warn(' Se necesita al menos un ID o una fecha para eliminar.')
     return
   }
 

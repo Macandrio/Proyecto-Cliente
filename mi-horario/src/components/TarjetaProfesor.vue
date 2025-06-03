@@ -126,12 +126,12 @@ async function subirImagenProfesor(event) {
         }
       }
     )
-    alert('✅ Imagen actualizada')
+    alert(' Imagen actualizada')
     cargarImagenProfesor()
-    emit('imagenSubida') // ✅ Dispara recarga en el padre
+    emit('imagenSubida') //  Dispara recarga en el padre
 
   } catch (error) {
-    console.error('❌ Error al subir imagen del profesor:', error)
+    console.error(' Error al subir imagen del profesor:', error)
     alert('Error al subir imagen')
   }
 }

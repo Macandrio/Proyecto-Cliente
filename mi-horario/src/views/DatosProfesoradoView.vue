@@ -2,9 +2,12 @@
   <MenuLateral />
 
   <div class=" mt-5 pt-4 px-3">
-    <div class="mb-4 d-flex justify-content-center">
-      <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
-    </div>
+
+    <div class="mb-4 d-flex justify-content-center mt-5" style="margin-top: 200px;">
+  <BuscadorProfesores @buscar="buscarProfesoresDesdeEvento" />
+</div>
+
+
 
     <!-- Contenedor centrado con formulario flotante -->
     <div class="main-wrapper d-flex justify-content-center align-items-start w-100 position-relative">
@@ -37,8 +40,7 @@ import MenuLateral from '../components/MenuLateral.vue'
 import BuscadorProfesores from '../components/BuscadorProfesores.vue'
 import TarjetaProfesor from '../components/TarjetaProfesor.vue'
 import ModalMensaje from '../components/ModalMensaje.vue'
-import FormularioEditarUsuario from '../components/FormularioEditarUsuario.vue'
-import FormularioCrearUsuario from '../components/FormularioCrearUsuario.vue'
+
 import { useRouter } from 'vue-router'
 
 
@@ -158,7 +160,7 @@ async function guardarUsuario(datosFormulario) {
   const { idProfesor, email, password, rol, nombre } = datosFormulario;
 
   if (!email || !password || !rol || !nombre) {
-    mostrarModal('❌ Campos incompletos', 'Por favor, completa todos los campos.', 'warning');
+    mostrarModal(' Campos incompletos', 'Por favor, completa todos los campos.', 'warning');
     return;
   }
 
@@ -187,7 +189,7 @@ async function guardarUsuario(datosFormulario) {
     );
 
     console.log("Respuesta del servidor:", response);
-    mostrarModal('✅ Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success');
+    mostrarModal(' Usuario creado', `Se ha vinculado correctamente a ${nombre}`, 'success');
     profesorSeleccionado.value = null;
     obtenerTodosLosProfesores();
 
@@ -201,11 +203,11 @@ async function guardarUsuario(datosFormulario) {
         erroresFormulario.value = error.response.data; // Mostrar solo errores de validación
       } else {
         // Si es otro tipo de error, mostrar el modal de error
-        mostrarModal('❌ Error', 'Ese usuario ya existe.', 'error');
+        mostrarModal(' Error', 'Ese usuario ya existe.', 'error');
       }
     } else {
       console.error("Error desconocido:", error);
-      mostrarModal('❌ Error', 'Ocurrió un error inesperado.', 'error');
+      mostrarModal(' Error', 'Ocurrió un error inesperado.', 'error');
     }
   } finally {
     isLoading.value = false;
@@ -226,11 +228,11 @@ async function eliminarUsuario(profesor) {
       }
     })
 
-    mostrarModal('✅ Usuario eliminado', `El usuario de ${profesor.nombre} ha sido eliminado.`, 'success')
+    mostrarModal(' Usuario eliminado', `El usuario de ${profesor.nombre} ha sido eliminado.`, 'success')
     obtenerTodosLosProfesores()
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
-    mostrarModal('❌ Error', 'No se pudo eliminar el usuario.', 'error')
+    mostrarModal(' Error', 'No se pudo eliminar el usuario.', 'error')
   }
 }
 
@@ -243,7 +245,7 @@ async function modificarUsuario(datosFormulario) {
   // Asegúrate de que el idUsuario no sea nulo o indefinido
   console.log(idUsuario + email + password + rol + nombre)
   if (!idUsuario) {
-    mostrarModal('❌ Error', 'El ID del usuario no puede ser nulo.', 'error');
+    mostrarModal(' Error', 'El ID del usuario no puede ser nulo.', 'error');
     return;
   }
 
@@ -272,7 +274,7 @@ async function modificarUsuario(datosFormulario) {
     );
 
     console.log("Respuesta del servidor:", response);
-    mostrarModal('✅ Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success');
+    mostrarModal(' Usuario modificado', `Se ha modificado correctamente a ${nombre}`, 'success');
     profesorSeleccionado.value = null;
     obtenerTodosLosProfesores();
   } catch (error) {
@@ -288,11 +290,11 @@ async function modificarUsuario(datosFormulario) {
 
       } else {
         // Si es otro tipo de error
-        mostrarModal('❌ Error', 'El usuario ya existe o hay otro error.', 'error');
+        mostrarModal(' Error', 'El usuario ya existe o hay otro error.', 'error');
       }
     } else {
       console.error("Error desconocido:", error);
-      mostrarModal('❌ Error', 'Ocurrió un error inesperado.', 'error');
+      mostrarModal(' Error', 'Ocurrió un error inesperado.', 'error');
     }
 
   } finally {

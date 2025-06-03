@@ -64,7 +64,7 @@
       }
     })
 
-    console.log('✅ Ausencia creada. Respuesta del backend:', response)
+    console.log(' Ausencia creada. Respuesta del backend:', response)
     console.log('📨 response.data:', response.data)
 
     emit('ausenciaCreada')
@@ -73,7 +73,7 @@
     nuevaAusencia.value = { fecha: '', horaInicio: '', horaFin: '', motivo: '' }
 
   } catch (error) {
-    console.error('❌ Error al crear ausencia:', error)
+    console.error(' Error al crear ausencia:', error)
     console.log('⚠️ error.response:', error.response)
     console.log('📩 error.response.data:', error.response?.data)
 

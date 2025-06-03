@@ -50,7 +50,7 @@
     profesor.value = response.data
     console.log('📦 Profesor cargado:', profesor.value)
   } catch (err) {
-    console.error('❌ Error al cargar el profesor', err)
+    console.error(' Error al cargar el profesor', err)
     router.push('/datos-profesorado')
   }
 })
